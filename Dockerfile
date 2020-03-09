@@ -16,4 +16,14 @@ RUN cd /autodock/src/autogrid/ ; ./configure ; make ; make install
 
 RUN cd /autodock/src/autodock/ ; ./configure ; make ; make install
 
-RUN autogrid4
+RUN mkdir /client
+COPY *.py /client
+
+RUN apt-get install -y python2.7 python-pip
+RUN pip install requests
+
+RUN cd /client ; python2.7 getjob.py
+
+
+
+
