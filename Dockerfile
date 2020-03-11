@@ -16,14 +16,28 @@ RUN cd /autodock/src/autogrid/ ; ./configure ; make ; make install
 
 RUN cd /autodock/src/autodock/ ; ./configure ; make ; make install
 
-RUN mkdir /client
-COPY *.py /client
-
 RUN apt-get install -y python2.7 python-pip
 RUN pip install requests
 
-RUN cd /client ; python2.7 getjob.py
+RUN mkdir /client
+COPY *.py /client/
+
+RUN mkdir /docking
+COPY docking /docking
+
+RUN ls /docking
+
+#RUN cd /docking ; python2.7 /client/docking.py
+
+#RUN cd /client ; python2.7 getjob.py
+
+#CMD /bin/sh
+
+RUN apt-get install -y git
+
+RUN cd /client/ ; git clone https://github.com/ccsb-scripps/AutoDock-GPU ; cd AutoDock-GPU ; make DEVICE=GPU NUMWI=32
 
 
+#RUN cd /docking ; python2.7 /client/docking.py
 
 

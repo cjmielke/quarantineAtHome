@@ -1,1 +1,2 @@
 sudo docker build .
+sudo docker container run -it quarantine /bin/bash
