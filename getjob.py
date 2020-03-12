@@ -40,7 +40,7 @@ class API():						# API client for talking to server
 
 	def _get(self, path):
 		url = self.server+path
-		req = requests.get(url)
+		req = requests.get(url, timeout=5)
 		j = json.loads(req.text)
 		return j
 
@@ -53,10 +53,9 @@ class API():						# API client for talking to server
 		j = self._get('/tranches/%s/nextmodel' % trancheName)
 		return j['model']
 
-	def reportResults(self, userName, modelName, zincID, bestDeltaG, bestKi):
+	def reportResults(self, data):
 		url = self.server + '/submitresults'
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-		data = dict(user=userName)
 		resp = requests.post(url, data=json.dumps(data), headers=headers)
 		print resp
 
@@ -130,13 +129,6 @@ TR = TrancheReader(tranche)
 
 
 
-for n in range(0, 4):
-	modelNum = client.nextModel(tranche)
-	print 'Server told us to work on model ', modelNum
-	zincID, model = TR.getModel(modelNum)
-
-
-	# run the docking
 
 
 def jobLoop():
@@ -153,6 +145,29 @@ def jobLoop():
 		zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
 
 
+
+def test():
+	for n in range(0, 4):
+		modelNum = client.nextModel(tranche)
+		print 'Server told us to work on model ', modelNum
+		zincID, model = TR.getModel(modelNum)
+
+
+def testSubmit():
+	client = API()
+	results = dict(
+		username='cosmo',
+		bestDG=-10.0,
+		bestKi=10e-6,
+		receptor='spike'
+	)
+	client.reportResults(results)
+
+
+if __name__ == '__main__':
+	#test()
+
+	testSubmit()
 
 
 
