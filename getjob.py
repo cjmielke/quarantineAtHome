@@ -1,11 +1,14 @@
 import gzip
 import os
+import time
+from random import shuffle
+from subprocess import check_call
 
 import requests
 import json
 
-SERVER = 'http://127.0.0.1:5001'
-
+from docking import runAutodock, parseLogfile
+from settings import SERVER, RECEPTORS_DIR
 
 '''
 On tranches stored in Zinc :
@@ -49,9 +52,9 @@ class API():						# API client for talking to server
 		Tn = j['tranche']
 		return Tn
 
-	def nextModel(self, trancheName):
-		j = self._get('/tranches/%s/nextmodel' % trancheName)
-		return j['model']
+	def nextLigand(self, trancheName):
+		j = self._get('/tranches/%s/nextligand' % trancheName)
+		return j['ligand']
 
 	def reportResults(self, data):
 		url = self.server + '/submitresults'
@@ -83,7 +86,6 @@ class TrancheReader():					# for fetchng/parsing tranche file
 
 		return
 
-
 	def getModel(self, modelNum):
 
 		zincID = None
@@ -103,8 +105,11 @@ class TrancheReader():					# for fetchng/parsing tranche file
 		with open('ligand.pdbqt', 'w') as lf:
 			lf.write('\n'.join(lines))
 
-		return zincID, lines
+		return zincID, '\n'.join(lines)
 
+	def saveModel(self, model, outfile='ligand.pdbqt'):
+		with open(outfile, 'w') as lf:
+			lf.write(model)
 
 
 # construct expected URL for this tranche
@@ -130,25 +135,75 @@ TR = TrancheReader(tranche)
 
 
 
+def updateReceptors():
+	cmd = [
+		'git', 'clone', 'https://github.com/cjmielke/quarantine-receptors', RECEPTORS_DIR
+	]
+	cmd = [
+		'git', 'pull'
+	]
+
+	ret=check_call(cmd)
+	cmd = [
+		'pwd'
+	]
+
+	ret=check_call(cmd)
+
+
+
+
+'''
+The primary loop for the client ....
+
+To minimize bandwidth requirements on the UCSF Zinc database, clients will download single tranche files,
+and generally stick with them for lengthy periods of time. Thus, the outer loop is a request to the server of 
+which tranche file should be processed.
+
+
+
+'''
+cmd = [
+	'git', 'pull'
+]
+
+ret = check_call(cmd)
+
 
 def jobLoop():
+	client = API()
 
-	# contact server for a tranche assignment
-
-	# contact server for a model assignment
-
-	# inner loop - which ligand models from this tranche file should we execute?
 	while True:
-		# get model number from server
-		modelNum = client.nextModel(tranche)					# ask server which ligand model number to execute
-		print 'Server told us to work on model ', modelNum
-		zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
+		updateReceptors()					# make sure we have all the receptors we need
 
+		tranche = client.nextTranche()		# contact server for a tranche assignment
+		TR = TrancheReader(tranche)			# then download and open this tranche for reading
+
+		# contact server for a model assignment (lets hardcode for now)
+		receptors = ['mpro-1']
+		shuffle(receptors)
+
+		# inner loop - which ligand models from this tranche file should we execute?
+		while True:
+			# get model number from server
+			modelNum = client.nextLigand(tranche)					# ask server which ligand model number to execute
+			print 'Server told us to work on model ', modelNum
+			zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
+
+			for receptor in receptors:
+				print 'running docking algorithm on ', receptor
+				dir = os.path.join(os.getcwd(), 'receptors', receptor)
+				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))
+				results = runAutodock(cwd=dir)
+				#parseLogfile(os.path.join(dir, 'log.dlg'))
+
+			#print 'running docking algorithm'
+			#time.sleep(4)
 
 
 def test():
 	for n in range(0, 4):
-		modelNum = client.nextModel(tranche)
+		modelNum = client.nextLigand(tranche)
 		print 'Server told us to work on model ', modelNum
 		zincID, model = TR.getModel(modelNum)
 
@@ -167,7 +222,9 @@ def testSubmit():
 if __name__ == '__main__':
 	#test()
 
-	testSubmit()
+	#testSubmit()
+	#updateReceptors()
+	jobLoop()
 
 
 

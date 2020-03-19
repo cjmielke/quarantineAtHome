@@ -1,42 +1,53 @@
-import gzip
 import os
 import re
 from subprocess import check_call
 
 import numpy as np
-import requests
-import json
 
+# check_call uses Popen args
+'''
+def __init__(self, args, bufsize=0, executable=None,
+			 stdin=None, stdout=None, stderr=None,
+			 preexec_fn=None, close_fds=False, shell=False,
+			 cwd=None, env=None, universal_newlines=False,
+			 startupinfo=None, creationflags=0):
+'''
 
-
-def runAutogrid():
-
-
-	autogridCmd = [
-		'autogrid4', '-p', 'Mpro.gpf', '-l', 'autogrid.log'
+def runAutogrid(cwd=None):
+	mglPath = os.path.join(os.getcwd(), 'mgltools_x86_64Linux2_1.5.6')
+	prepCmd = [
+		#'./mgltools_x86_64Linux2_1.5.6/MGLToolsPckgs/AutoDockTools/Utilities24/prepare_gpf.py',
+		os.path.join(mglPath, 'MGLToolsPckgs/AutoDockTools/Utilities24/prepare_gpf4.py'),
+		'-i', 'template.gpf',		# primarily needed to save the gridbox information .... unique for each receptor
+		'-l', 'ligand.pdbqt',
+		'-r', 'receptor.pdbqt',
+		'-o', 'autogrid.gpf'
 	]
-	ret = check_call(autogridCmd, cwd='/docking/')
+	check_call(prepCmd, cwd=cwd)
 
-	# check_call uses Popen args
-	'''
-	def __init__(self, args, bufsize=0, executable=None,
-				 stdin=None, stdout=None, stderr=None,
-				 preexec_fn=None, close_fds=False, shell=False,
-				 cwd=None, env=None, universal_newlines=False,
-				 startupinfo=None, creationflags=0):
-	'''
+	autogridCmd = [ 'autogrid4', '-p', 'autogrid.gpf', '-l', 'autogrid.log' ]
+	ret = check_call(autogridCmd, cwd=cwd)
 
+def runAutodock(cwd=None):
+	if not cwd: cwd=os.getcwd()
 
-def runAutodock():
-
-
-	cmd = [
-		'autodock4', '-p', 'Mpro.dpf', '-l', 'dock.dlg'
+	mglPath = os.path.join(os.getcwd(), 'mgltools_x86_64Linux2_1.5.6')
+	prepCmd = [
+		#'./mgltools_x86_64Linux2_1.5.6/MGLToolsPckgs/AutoDockTools/Utilities24/prepare_gpf.py',
+		os.path.join(mglPath, 'MGLToolsPckgs/AutoDockTools/Utilities24/prepare_dpf4.py'),
+		#'-i', 'template.dpf',		# might re-enable this to set certain desired algorithm parameters for each system ....
+		'-l', 'ligand.pdbqt',
+		'-r', 'receptor.pdbqt',
+		'-o', 'autodock.dpf'
 	]
-	ret = check_call(cmd, cwd='/docking/')
+	check_call(prepCmd, cwd=cwd)
 
+	cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'dock.dlg' ]
+	ret = check_call(cmd, cwd=cwd)
 
-
+	lf = os.path.join(cwd, 'log.dlg')
+	results = parseLogfile(lf)
+	return results
 
 
 def parseLogfile(fileName):
@@ -75,9 +86,14 @@ def parseLogfile(fileName):
 
 		return results
 
+
+
+
 if __name__ == '__main__':
-	#runAutogrid()
-	runAutodock()
+	dir = os.path.join(os.getcwd(), 'receptors/mpro-1/')
+	print dir
+	#runAutogrid(cwd=dir)
+	runAutodock(cwd=dir)
 	#parseLogfile('docking.dlg')
 	#parseLogfile('dock2.dlg')
 
