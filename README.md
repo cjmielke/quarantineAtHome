@@ -17,8 +17,14 @@ quarantine@Home is a distributed computing project (like SETI@home) to fight the
 
 This project is being written in Dockerfiles, to allow the ease of distributing work.
 
+### Model systems
+
+##### Sars-cov2 Spike protein
+Ideally, if we found small molecules that bind to the contact surface between spike protein and human ACE2, we may block its spread in the body,
 
 ![alt text](img/spike1.jpg "Spike protein")
+
+
 
 ### Building
 
