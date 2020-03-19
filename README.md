@@ -9,6 +9,8 @@ quarantine@Home is a distributed computing project (like SETI@home) to fight the
 This project is being written in Dockerfiles, to allow the ease of distributing work.
 
 
+![alt text](img/spike1.jpg "Spike protein")
+
 ### Building
 
 ##### GPU users :
