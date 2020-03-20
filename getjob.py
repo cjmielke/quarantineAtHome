@@ -1,13 +1,11 @@
 import gzip
 import os
-import time
-from random import shuffle
 from subprocess import check_call
 
 import requests
 import json
 
-from docking import runAutodock, parseLogfile
+from client import jobLoop
 from settings import SERVER, RECEPTORS_DIR
 
 '''
@@ -170,37 +168,6 @@ cmd = [
 ret = check_call(cmd)
 
 
-def jobLoop():
-	client = API()
-
-	while True:
-		updateReceptors()					# make sure we have all the receptors we need
-
-		tranche = client.nextTranche()		# contact server for a tranche assignment
-		TR = TrancheReader(tranche)			# then download and open this tranche for reading
-
-		# contact server for a model assignment (lets hardcode for now)
-		receptors = ['mpro-1']
-		shuffle(receptors)
-
-		# inner loop - which ligand models from this tranche file should we execute?
-		while True:
-			# get model number from server
-			modelNum = client.nextLigand(tranche)					# ask server which ligand model number to execute
-			print 'Server told us to work on model ', modelNum
-			zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
-
-			for receptor in receptors:
-				print 'running docking algorithm on ', receptor
-				dir = os.path.join(os.getcwd(), 'receptors', receptor)
-				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))
-				results = runAutodock(cwd=dir)
-				#parseLogfile(os.path.join(dir, 'log.dlg'))
-
-			#print 'running docking algorithm'
-			#time.sleep(4)
-
-
 def test():
 	for n in range(0, 4):
 		modelNum = client.nextLigand(tranche)
@@ -220,11 +187,9 @@ def testSubmit():
 
 
 if __name__ == '__main__':
-	#test()
-
+	test()
 	#testSubmit()
 	#updateReceptors()
-	jobLoop()
 
 
 
