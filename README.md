@@ -28,8 +28,15 @@ Ideally, if we found small molecules that bind to the contact surface between sp
 
 ### Building
 
-##### GPU users :
-You will need to have nvidia-docker installed 
+##### CPU users :
+This uses the standard version of AutoDock4.
 
-    sudo docker build -t quarantinegpu -f Dockerfile.gpu .
+    sudo docker build -t quarantine -f Dockerfile . && sudo docker run quarantine
+
+##### GPU users (much faster!) :
+You will need to have nvidia-docker installed. This will run a [GPU-optimized version of Autodock](https://github.com/ccsb-scripps/AutoDock-GPU) 
+
+    sudo docker build -t quarantinegpu -f Dockerfile.gpu . && sudo docker run quarantinegpu
     
+
+
