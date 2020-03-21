@@ -54,7 +54,7 @@ def runAutodock(cwd=None):
 	check_call(prepCmd, cwd=cwd, env={'PATH': '/mgltools_x86_64Linux2_1.5.6/bin'})
 
 
-	logFile = os.path.join(cwd, 'dock.dlg')
+	logFile = os.path.join(cwd, 'docking.dlg')				# note - autodock-gpu always uses this filename, so we adopt it
 	if os.path.exists(logFile): os.remove(logFile)
 
 
@@ -66,13 +66,13 @@ def runAutodock(cwd=None):
 		cmd = [ gpuBins[0], '-ffile', 'receptor.maps.fld', '-lfile', 'ligand.pdbqt', '-nrun', '100' ]
 		algo = 'AD-gpu'
 	else:
-		#cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'dock.dlg' ]
-		cmd = [ 'autodock4', '-p', 'autodock.dpf']
+		cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
+		#cmd = [ 'autodock4', '-p', 'autodock.dpf']
 		algo = 'AD4'
 
-	log = open(logFile, 'w')
-	ret = check_call(cmd, cwd=cwd, stdout=log)
-	log.close()
+	#log = open(logFile, 'w')
+	ret = check_call(cmd, cwd=cwd)
+	#log.close()
 
 	results = parseLogfile(logFile)
 	results['algo']=algo
