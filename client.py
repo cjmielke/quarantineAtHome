@@ -10,6 +10,18 @@ from getjob import API, TrancheReader
 parser = argparse.ArgumentParser()
 parser.parse_args()
 
+from raven import Client
+
+client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507511340c7f7@bugs.infino.me/6')
+sentry_errors_log = logging.getLogger("sentry.errors")
+sentry_errors_log.addHandler(logging.StreamHandler())
+
+'''
+try:
+	1 / 0
+except ZeroDivisionError:
+	client.captureException()
+'''
 
 
 '''
