@@ -27,13 +27,7 @@ Ideally, if we found small molecules that bind to the contact surface between sp
 
 
 ### Building
-agged quarantinegpu:latest
-Already up to date.
-Connection object at 0x7fed0ba89210>: Failed to establish a new connection: [Errno 111] Connection refused',))
-Already up to date.
-   resp = self.send(prep, **send_kwargs)
-Connection object at 0x7f7c9b536310>: Failed to establish a new connection: [Errno 111] Connection refused',))
-Already up to date
+
 ##### CPU users :
 This uses the standard version of AutoDock4.
 
