@@ -36,7 +36,7 @@ This uses the standard version of AutoDock4.
 ##### GPU users (much faster!) :
 You will need to have nvidia-docker installed. This will run a [GPU-optimized version of Autodock](https://github.com/ccsb-scripps/AutoDock-GPU) 
 
-    sudo docker build -t quarantinegpu -f Dockerfile.gpu . && sudo docker run quarantinegpu
+    sudo docker build -t quarantinegpu -f Dockerfile.gpu . && sudo nvidia-docker run quarantinegpu
     
 
 

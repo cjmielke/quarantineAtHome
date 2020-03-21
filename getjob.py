@@ -1,12 +1,11 @@
 import gzip
+import json
 import os
 from subprocess import check_call
 
 import requests
-import json
 
-from client import jobLoop
-from settings import SERVER, RECEPTORS_DIR
+from settings import SERVER, API_V
 
 '''
 On tranches stored in Zinc :
@@ -37,10 +36,11 @@ r = requests.post(url, data=json.dumps(data), headers=headers)
 class API():						# API client for talking to server
 	def __init__(self):
 		self.server = SERVER
-
+		self.apiPath = SERVER + '/api/'+API_V
 
 	def _get(self, path):
-		url = self.server+path
+		url = self.apiPath+path
+		print url
 		req = requests.get(url, timeout=5)
 		j = json.loads(req.text)
 		return j
@@ -52,14 +52,14 @@ class API():						# API client for talking to server
 
 	def nextLigand(self, trancheName):
 		j = self._get('/tranches/%s/nextligand' % trancheName)
-		return j['ligand']
+		return j['ligand'], j['receptors']
 
 	def reportResults(self, data):
-		url = self.server + '/submitresults'
+		url = self.apiPath + '/submitresults'
+		print url
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 		resp = requests.post(url, data=json.dumps(data), headers=headers)
 		print resp
-
 
 
 class TrancheReader():					# for fetchng/parsing tranche file
@@ -86,6 +86,9 @@ class TrancheReader():					# for fetchng/parsing tranche file
 
 	def getModel(self, modelNum):
 
+		if modelNum < self.currentModel:			# reload tranche modelfile if the server is requesting a ligand we've already passed
+			self.fh = gzip.open(self.name)
+
 		zincID = None
 		lines = []
 		for line in self.fh:
@@ -96,83 +99,33 @@ class TrancheReader():					# for fetchng/parsing tranche file
 				if 'Name' in line:
 					zincID = line.replace('REMARK', '').replace('Name', '').replace('=', '').strip()
 			if self.currentModel == modelNum: lines.append(line.rstrip('\n'))
+
 		if len(lines) == 0:
 			raise ValueError('Tranche is out of Models')
 
 
-		with open('ligand.pdbqt', 'w') as lf:
-			lf.write('\n'.join(lines))
+		#with open('ligand.pdbqt', 'w') as lf:
+		#	lf.write('\n'.join(lines))
 
 		return zincID, '\n'.join(lines)
+
 
 	def saveModel(self, model, outfile='ligand.pdbqt'):
 		with open(outfile, 'w') as lf:
 			lf.write(model)
 
 
-# construct expected URL for this tranche
-
-
-
-# now the tranche file is downloaded to this local worker
-# open it as a compressed stream
-
-'''
-for line in fh:
-	line = line.rstrip()
-	print line, fh.offset
-'''
-
-client = API()
-tranche = client.nextTranche()
-
-TR = TrancheReader(tranche)
-
-
-
-
-
-
-def updateReceptors():
-	cmd = [
-		'git', 'clone', 'https://github.com/cjmielke/quarantine-receptors', RECEPTORS_DIR
-	]
-	cmd = [
-		'git', 'pull'
-	]
-
-	ret=check_call(cmd)
-	cmd = [
-		'pwd'
-	]
-
-	ret=check_call(cmd)
-
-
-
-
-'''
-The primary loop for the client ....
-
-To minimize bandwidth requirements on the UCSF Zinc database, clients will download single tranche files,
-and generally stick with them for lengthy periods of time. Thus, the outer loop is a request to the server of 
-which tranche file should be processed.
-
-
-
-'''
-cmd = [
-	'git', 'pull'
-]
-
-ret = check_call(cmd)
-
 
 def test():
+	client = API()
+	tranche = client.nextTranche()
+
+	TR = TrancheReader(tranche)
+
 	for n in range(0, 4):
-		modelNum = client.nextLigand(tranche)
-		print 'Server told us to work on model ', modelNum
-		zincID, model = TR.getModel(modelNum)
+		ligandNumber, receptors = client.nextLigand(tranche)
+		print 'Server told us to work on ligand ', ligandNumber, receptors
+		zincID, model = TR.getModel(ligandNumber)
 
 
 def testSubmit():
@@ -181,14 +134,17 @@ def testSubmit():
 		username='cosmo',
 		bestDG=-10.0,
 		bestKi=10e-6,
-		receptor='spike'
+		receptor='spike',
+		algo='autodock4',
+		zincID='ZINC000130'
 	)
+	results['test'] = 1					# server will not save in DB
 	client.reportResults(results)
 
 
 if __name__ == '__main__':
 	test()
-	#testSubmit()
+	testSubmit()
 	#updateReceptors()
 
 

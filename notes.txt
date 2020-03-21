@@ -2,3 +2,5 @@ sudo docker build .
 sudo docker container run -it quarantine /bin/bash
 sudo docker exec -it f2791e1c75fc /bin/bash
 sudo docker build -t quarantinegpu -f Dockerfile.gpu .
+
+

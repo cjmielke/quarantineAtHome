@@ -4,59 +4,63 @@ import sys
 import time
 from random import shuffle
 
-from docking import runAutodock
-from getjob import API, updateReceptors, TrancheReader
+from docking import runAutodock, runAutogrid
+from getjob import API, TrancheReader
 
 parser = argparse.ArgumentParser()
 parser.parse_args()
 
 
 
+'''
+The primary loop for the client ....
+
+To minimize bandwidth requirements on the UCSF Zinc database, clients will download single tranche files,
+and generally stick with them for lengthy periods of time. Thus, the outer loop is a request to the server of 
+which tranche file should be processed.
+'''
+
+
 def jobLoop():
 	client = API()
 
 	while True:
-		updateReceptors()					# make sure we have all the receptors we need
 
 		tranche = client.nextTranche()		# contact server for a tranche assignment
 		TR = TrancheReader(tranche)			# then download and open this tranche for reading
 
-		# contact server for a model assignment (lets hardcode for now)
-		receptors = ['mpro-1']
-		shuffle(receptors)
-
 		# inner loop - which ligand models from this tranche file should we execute?
 		while True:
 			# get model number from server
-			modelNum = client.nextLigand(tranche)					# ask server which ligand model number to execute
+			modelNum, receptors = client.nextLigand(tranche)					# ask server which ligand model number to execute
 			print 'Server told us to work on model ', modelNum
-			zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
+
+			try: zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
+			except:
+				break													# will ask for the next tranche
 
 			for receptor in receptors:
 				print 'running docking algorithm on ', receptor
 				dir = os.path.join(os.getcwd(), 'receptors', receptor)
 
-				if not os.path.exists(dir):
-					# if a new receptor model has been deployed, this client's code may be out of date
-					# exit, and let the bash script run a git pull, and rerun the python script
-					sys.exit(1)
+				if not os.path.exists(dir):			# if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
+					raise ValueError("Don't have this receptor definition yet")
+					#sys.exit(1)
 
 				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))
-				results = runAutodock(cwd=dir)
-				#parseLogfile(os.path.join(dir, 'log.dlg'))
 
-			#print 'running docking algorithm'
-			#time.sleep(4)
+				start = time.time()
+				runAutogrid(cwd=dir)
+				results = runAutodock(cwd=dir)
+				end = time.time()
+				results['time'] = end-start
+
+				client.reportResults(results)
+
 
 
 if __name__ == '__main__':
 	jobLoop()
-
-
-	while True:
-		print 'running job'
-		time.sleep(5)
-		sys.exit()
 
 
 

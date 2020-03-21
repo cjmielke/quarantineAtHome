@@ -15,21 +15,14 @@ RUN wget http://mgltools.scripps.edu/downloads/downloads/tars/releases/REL1.5.6/
 RUN tar -xvzf mgltools_x86_64Linux2_1.5.6.tar.gz
 #RUN mv mgltools_x86_64Linux2_1.5.6 /client
 
-#RUN cd mgltools_x86_64Linux2_1.5.6 ; ./install.sh
-
-### CPU version of client uses standard autodock 4
-
 RUN wget http://autodock.scripps.edu/downloads/autodock-registration/tars/dist426/autodocksuite-4.2.6-src.tar.gz
 RUN mkdir /autodock
 RUN cd /autodock ; tar -xvzf /autodocksuite-4.2.6-src.tar.gz
-
 RUN ls /autodock
 
 RUN cd /autodock/src/autogrid/ ; ./configure ; make ; make install
 RUN cd /autodock/src/autodock/ ; ./configure ; make ; make install
 
-
-### redundant - pick either /client or /docking
 
 COPY *.py /
 COPY *.sh /

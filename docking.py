@@ -13,6 +13,9 @@ def __init__(self, args, bufsize=0, executable=None,
 			 startupinfo=None, creationflags=0):
 '''
 
+# FIXME - we need to figure out clever ways of capturing stdout of autodock and autogrid
+# FIXME - could null-route it, but would be better to condense status so the user knows something is happening
+
 def runAutogrid(cwd=None):
 	mglPath = os.path.join(os.getcwd(), 'mgltools_x86_64Linux2_1.5.6')
 	prepCmd = [
@@ -45,13 +48,15 @@ def runAutodock(cwd=None):
 	cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'dock.dlg' ]
 	ret = check_call(cmd, cwd=cwd)
 
-	lf = os.path.join(cwd, 'log.dlg')
+	lf = os.path.join(cwd, 'dock.dlg')
 	results = parseLogfile(lf)
 	return results
 
 
+# FIXME - parse the inhibiion constant (in millimolar, micromolar, nanomolar, etc) and standardize
 def parseLogfile(fileName):
 	energyRE = re.compile(r'= {2,3}([-+\d.]*) kcal\/mol')
+
 	with open(fileName) as fh:
 		firstLine = fh.readline()
 
@@ -80,13 +85,12 @@ def parseLogfile(fileName):
 		print 'binding energy min : ', bindingEnergies.min()
 
 		results = dict(
-			meanBindingEnergy = bindingEnergies.mean(), minBindingEnergy = bindingEnergies.min(),
+			meanDG = bindingEnergies.mean(),
+			bestDG = bindingEnergies.min(),
 			zincID = zincID
 		)
 
 		return results
-
-
 
 
 if __name__ == '__main__':
