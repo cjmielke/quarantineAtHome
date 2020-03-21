@@ -1,0 +1,6 @@
+*.pyc
+venv
+ligand.pdbqt
+*.dlg
+*pdbqt.gz
+mgltools*

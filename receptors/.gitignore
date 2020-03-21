@@ -1,0 +1,4 @@
+*/*.map
+*/ligand.pdbqt
+*/autogrid.gpf
+*/autodock.dpf
