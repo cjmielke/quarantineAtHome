@@ -70,7 +70,9 @@ def runAutodock(cwd=None):
 		cmd = [ 'autodock4', '-p', 'autodock.dpf']
 		algo = 'AD4'
 
-	ret = check_call(cmd, cwd=cwd, stdout=open(logFile, 'w'))
+	log = open(logFile, 'w')
+	ret = check_call(cmd, cwd=cwd, stdout=log)
+	log.close()
 
 	results = parseLogfile(logFile)
 	results['algo']=algo
