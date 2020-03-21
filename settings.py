@@ -5,6 +5,9 @@ SERVER = 'http://127.0.0.1:5001'
 API_V = 'v1'
 
 
+PRODUCTION_SERVER = 'https://quarantine.infino.me'
+
+
 RECEPTORS_DIR = 'docking/receptors'
 RECEPTORS_DIR = os.path.join(os.getcwd(), 'receptors')
 

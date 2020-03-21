@@ -34,8 +34,12 @@ which tranche file should be processed.
 '''
 
 
+devmode = os.getenv('DEBUG')		# if set, enters developer mode (contacts local server
+USERNAME = os.getenv('ME')		# if set, enters developer mode (contacts local server
+
+
 def jobLoop():
-	client = API()
+	client = API(USERNAME, dev=devmode)
 
 	while True:
 

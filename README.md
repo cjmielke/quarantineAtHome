@@ -26,18 +26,21 @@ Ideally, if we found small molecules that bind to the contact surface between sp
 
 
 
-### Building
+### Building and running
 
+If you want your username to appear in the leaderboards, change "anonymous" below
 
 ##### CPU users :
 This uses the standard version of AutoDock4.
 
-    sudo docker build -t quarantine -f Dockerfile . && sudo docker run quarantine
+    sudo docker build -t quarantine -f Dockerfile .
+    sudo docker run -e ME=anonymous quarantine
 
 ##### GPU users (much faster!) :
 You will need to have nvidia-docker installed. This will run a [GPU-optimized version of Autodock](https://github.com/ccsb-scripps/AutoDock-GPU) 
 
-    sudo docker build -t quarantinegpu -f Dockerfile.gpu . && sudo nvidia-docker run quarantinegpu
+    sudo docker build -t quarantinegpu -f Dockerfile.gpu .
+    sudo nvidia-docker run -e ME=anonymous quarantinegpu
     
 Need nvidia-docker? [this is the best tutorial on how to install it](https://medium.com/@sh.tsang/docker-tutorial-5-nvidia-docker-2-0-installation-in-ubuntu-18-04-cb80f17cac65)
 

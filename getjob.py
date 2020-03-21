@@ -4,8 +4,9 @@ import os
 from subprocess import check_call
 
 import requests
+from urllib3 import Retry
 
-from settings import SERVER, API_V
+from settings import SERVER, API_V, PRODUCTION_SERVER
 
 '''
 On tranches stored in Zinc :
@@ -31,17 +32,39 @@ r = requests.post(url, data=json.dumps(data), headers=headers)
 
 '''
 
+import logging
+import requests
+
+from requests.adapters import HTTPAdapter
+#from requests.packages.urllib3.util.retry import Retry
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class API():						# API client for talking to server
-	def __init__(self):
-		self.server = SERVER
-		self.apiPath = SERVER + '/api/'+API_V
+	def __init__(self, username, dev=None):
+		self.username = username
+
+		if dev is not None:
+			self.server = SERVER
+		else:
+			self.server = PRODUCTION_SERVER
+
+		self.apiPath = self.server + '/api/'+API_V
+
+		# implementation found from : https://stackoverflow.com/questions/23267409/how-to-implement-retry-mechanism-into-python-requests-library
+		self.session = requests.Session()
+		retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+		retries = Retry(total=5, backoff_factor=1)
+		self.session.mount('https://', HTTPAdapter(max_retries=retries))
+
+		#self.session.get("http://httpstat.us/503")
 
 	def _get(self, path):
 		url = self.apiPath+path
-		print url
-		req = requests.get(url, timeout=5)
+		print 'trying new retry session! ', url
+		#req = requests.get(url, timeout=5)
+		req = self.session.get(url, timeout=5)
 		j = json.loads(req.text)
 		return j
 
@@ -55,6 +78,7 @@ class API():						# API client for talking to server
 		return j['ligand'], j['receptors']
 
 	def reportResults(self, data):
+		data['user'] = self.username
 		url = self.apiPath + '/submitresults'
 		print url
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
