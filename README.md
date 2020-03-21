@@ -28,6 +28,7 @@ Ideally, if we found small molecules that bind to the contact surface between sp
 
 ### Building
 
+
 ##### CPU users :
 This uses the standard version of AutoDock4.
 
@@ -40,3 +41,11 @@ You will need to have nvidia-docker installed. This will run a [GPU-optimized ve
     
 Need nvidia-docker? [this is the best tutorial on how to install it](https://medium.com/@sh.tsang/docker-tutorial-5-nvidia-docker-2-0-installation-in-ubuntu-18-04-cb80f17cac65)
 
+
+##### Why Docker ?
+
+I'm no docker fanatic, but this needs to be portable to make it easier for participants to easily contribute. Installing the base packages is quite laborious.
+
+Also, we're going to try using [boinc2docker](https://github.com/marius311/boinc-server-docker/blob/master/docs/cookbook.md) to deploy this on all systems
+
+![alt text](img/dawg.jpg "Yo Dawg!")
