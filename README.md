@@ -38,5 +38,5 @@ You will need to have nvidia-docker installed. This will run a [GPU-optimized ve
 
     sudo docker build -t quarantinegpu -f Dockerfile.gpu . && sudo nvidia-docker run quarantinegpu
     
-
+Need nvidia-docker? [this is the best tutorial on how to install it](https://medium.com/@sh.tsang/docker-tutorial-5-nvidia-docker-2-0-installation-in-ubuntu-18-04-cb80f17cac65)
 

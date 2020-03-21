@@ -54,6 +54,10 @@ def jobLoop():
 				results = runAutodock(cwd=dir)
 				end = time.time()
 				results['time'] = end-start
+				results['receptor'] = receptor
+
+				# FIXME - different autodock versions have different logfile formats - some don't export ligand name
+				#if
 
 				client.reportResults(results)
 

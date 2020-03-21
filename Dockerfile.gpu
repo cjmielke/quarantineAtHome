@@ -14,7 +14,13 @@ RUN pip install requests
 
 RUN wget http://mgltools.scripps.edu/downloads/downloads/tars/releases/REL1.5.6/mgltools_x86_64Linux2_1.5.6.tar.gz
 RUN tar -xvzf mgltools_x86_64Linux2_1.5.6.tar.gz
-#RUN mv mgltools_x86_64Linux2_1.5.6 /client
+#RUN cd /mgltools_x86_64Linux2_1.5.6 ; tar -xvzf MGLToolsPckgs.tar.gz
+RUN cd /mgltools_x86_64Linux2_1.5.6 ; ./install.sh
+#RUN mv mgltools_x86_64Linux2_1.5.6 /mgtools
+
+
+
+
 
 RUN wget http://autodock.scripps.edu/downloads/autodock-registration/tars/dist426/autodocksuite-4.2.6-src.tar.gz
 RUN mkdir /autodock
@@ -22,7 +28,7 @@ RUN cd /autodock ; tar -xvzf /autodocksuite-4.2.6-src.tar.gz
 RUN ls /autodock
 
 RUN cd /autodock/src/autogrid/ ; ./configure ; make ; make install
-#RUN cd /autodock/src/autodock/ ; ./configure ; make ; make install
+RUN cd /autodock/src/autodock/ ; ./configure ; make ; make install
 
 
 
@@ -36,18 +42,24 @@ RUN pwd
 RUN cd /model/ ; ls
 
 
+
+COPY requirements.txt /
+RUN pip install -r requirements.txt
+
+
+
 COPY *.py /
 COPY *.sh /
 COPY receptors /receptors
 COPY .git /.git
 
+
+
+
 #RUN apt-get install -y git opencl-c-headers ocl-icd-libopencl1 ocl-icd-opencl-dev
-COPY sars2-docking /model
-CMD cd /model/ ; /AutoDock-GPU/bin/autodock_gpu_32wi -ffile chainE.maps.fld -lfile DCABRM.xaa_ligand_200.pdbqt -nrun 100
+#COPY sars2-docking /model
+#CMD cd /model/ ; /AutoDock-GPU/bin/autodock_gpu_32wi -ffile chainE.maps.fld -lfile DCABRM.xaa_ligand_200.pdbqt -nrun 100
 
-#RUN cd /docking ; python2.7 /client/docking.py
 
-#CMD tail -f /dev/null
-#ENTRYPOINT /bin/sh
-
+ENTRYPOINT ["/client.sh"]
 

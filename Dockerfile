@@ -13,7 +13,13 @@ RUN pip install requests
 
 RUN wget http://mgltools.scripps.edu/downloads/downloads/tars/releases/REL1.5.6/mgltools_x86_64Linux2_1.5.6.tar.gz
 RUN tar -xvzf mgltools_x86_64Linux2_1.5.6.tar.gz
-#RUN mv mgltools_x86_64Linux2_1.5.6 /client
+#RUN cd /mgltools_x86_64Linux2_1.5.6 ; tar -xvzf MGLToolsPckgs.tar.gz
+RUN cd /mgltools_x86_64Linux2_1.5.6 ; ./install.sh
+#RUN mv mgltools_x86_64Linux2_1.5.6 /mgtools
+
+
+
+
 
 RUN wget http://autodock.scripps.edu/downloads/autodock-registration/tars/dist426/autodocksuite-4.2.6-src.tar.gz
 RUN mkdir /autodock
@@ -24,35 +30,19 @@ RUN cd /autodock/src/autogrid/ ; ./configure ; make ; make install
 RUN cd /autodock/src/autodock/ ; ./configure ; make ; make install
 
 
+COPY requirements.txt /
+RUN pip install -r requirements.txt
+
+
+
 COPY *.py /
 COPY *.sh /
 COPY receptors /receptors
 COPY .git /.git
 
-#RUN mkdir /docking
-#COPY docking /docking
-#RUN ls /docking
-
-#RUN cd /docking ; python2.7 /client/docking.py
-
-#RUN cd /client ; python2.7 getjob.py
-
-#CMD /bin/sh
-
-
-#RUN cd /docking ; python2.7 /client/docking.py
 
 
 
-RUN pwd
-RUN ls
-RUN ls /receptors
 
-#RUN prepare_dpf4.py
-#ENV PATH="/mgltools_x86_64Linux2_1.5.6/bin:${PATH}"
-#RUN ./mgltools_x86_64Linux2_1.5.6/MGLToolsPckgs/AutoDockTools/Utilities24/prepare_dpf.py -h
-
-RUN /client.sh
-
-#CMD /client/client.sh
+#RUN /client.sh
 
