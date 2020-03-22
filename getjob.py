@@ -78,6 +78,9 @@ class API():						# API client for talking to server
 		j = self._get('/tranches/%s/nextligand' % trancheID)
 		return j['ligand'], j['receptors']
 
+	def trancheEOF(self, trancheID):
+		j = self._get('/tranches/%s/out' % trancheID)
+
 	def reportResults(self, data):
 		data['user'] = self.username
 		url = self.apiPath + '/submitresults'
@@ -139,7 +142,8 @@ class TrancheReader():					# for fetchng/parsing tranche file
 			if self.currentModel == modelNum: lines.append(line.rstrip('\n'))
 
 		if len(lines) == 0:
-			raise ValueError('Tranche is out of Models')
+			raise StopIteration
+			#raise ValueError('Tranche is out of Models')
 
 
 		#with open('ligand.pdbqt', 'w') as lf:

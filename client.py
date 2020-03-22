@@ -53,8 +53,9 @@ def jobLoop():
 			print 'Server told us to work on model ', ligandNum
 
 			try: zincID, model = TR.getModel(ligandNum)					# parse out of Tranche file
-			except:
-				break													# will ask for the next tranche
+			except StopIteration:
+				client.trancheEOF(trancheID)
+				break
 
 			for receptor in receptors:
 				print 'running docking algorithm on ', receptor
