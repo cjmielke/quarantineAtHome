@@ -43,16 +43,16 @@ def jobLoop():
 
 	while True:
 
-		tranche = client.nextTranche()		# contact server for a tranche assignment
-		TR = TrancheReader(tranche)			# then download and open this tranche for reading
+		trancheID, tranche = client.nextTranche()		# contact server for a tranche assignment
+		TR = TrancheReader(trancheID, tranche)			# then download and open this tranche for reading
 
 		# inner loop - which ligand models from this tranche file should we execute?
 		while True:
 			# get model number from server
-			modelNum, receptors = client.nextLigand(tranche)					# ask server which ligand model number to execute
-			print 'Server told us to work on model ', modelNum
+			ligandNum, receptors = client.nextLigand(trancheID)					# ask server which ligand model number to execute
+			print 'Server told us to work on model ', ligandNum
 
-			try: zincID, model = TR.getModel(modelNum)					# parse out of Tranche file
+			try: zincID, model = TR.getModel(ligandNum)					# parse out of Tranche file
 			except:
 				break													# will ask for the next tranche
 
@@ -72,6 +72,8 @@ def jobLoop():
 				end = time.time()
 				results['time'] = end-start
 				results['receptor'] = receptor
+				results['tranche'] = trancheID
+				results['ligand'] = ligandNum
 
 				# FIXME - different autodock versions have different logfile formats - some don't export ligand name
 				#if

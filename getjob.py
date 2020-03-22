@@ -6,7 +6,7 @@ from subprocess import check_call
 import requests
 from urllib3 import Retry
 
-from settings import SERVER, API_V, PRODUCTION_SERVER
+from settings import SERVER, API_V, PRODUCTION_SERVER, TRANCHE_DOWNLOAD_LOCATION
 
 '''
 On tranches stored in Zinc :
@@ -54,8 +54,10 @@ class API():						# API client for talking to server
 
 		# implementation found from : https://stackoverflow.com/questions/23267409/how-to-implement-retry-mechanism-into-python-requests-library
 		self.session = requests.Session()
-		retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-		retries = Retry(total=5, backoff_factor=1)
+		# nginx will conveniently return a 502 if the flask server goes down
+
+		methods = frozenset(["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST"] )
+		retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504], method_whitelist=methods)
 		self.session.mount('https://', HTTPAdapter(max_retries=retries))
 
 		#self.session.get("http://httpstat.us/503")
@@ -70,11 +72,10 @@ class API():						# API client for talking to server
 
 	def nextTranche(self):
 		j = self._get('/tranche/get')
-		Tn = j['tranche']
-		return Tn
+		return j['id'], j['tranche']
 
-	def nextLigand(self, trancheName):
-		j = self._get('/tranches/%s/nextligand' % trancheName)
+	def nextLigand(self, trancheID):
+		j = self._get('/tranches/%s/nextligand' % trancheID)
 		return j['ligand'], j['receptors']
 
 	def reportResults(self, data):
@@ -82,26 +83,39 @@ class API():						# API client for talking to server
 		url = self.apiPath + '/submitresults'
 		print url
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-		resp = requests.post(url, data=json.dumps(data), headers=headers)
+		#resp = requests.post(url, data=json.dumps(data), headers=headers)
+		#resp = self.session.post(url, data=json.dumps(data), headers=headers, timeout=5)
+		resp = self.session.post(url, json=data, timeout=5)
 		print resp
 
 
 class TrancheReader():					# for fetchng/parsing tranche file
-	def __init__(self, trancheName):
-		self.name = trancheName
-		self.download()
-		self.fh = gzip.open(self.name)
+	def __init__(self, trancheID, tranchePath):
+		self.trancheID = trancheID
+		self.tranchePath = tranchePath				# as in, the url path on files.docker.org
 		self.currentModel = 0
+		self.trancheFile = None
+		self.download()
+		self.fh = gzip.open(self.trancheFile)
 
+	# FIXME - really should download tranche files into a local path ....
 	def download(self):
-		Tn = self.name
-		trancheUrl = 'http://files.docking.org/3D/%s/%s/%s' % (Tn[0:2], Tn[2:6], Tn)
+		Tn = self.tranchePath
+		#trancheUrl = 'http://files.docking.org/3D/%s/%s/%s' % (Tn[0:2], Tn[2:6], Tn)
+		trancheUrl = 'http://files.docking.org/' + self.tranchePath
 		print trancheUrl
 		# TRANCHE_FILE = 'tranche.pdbqt.gz'
-		trancheFilename = Tn
-		if not os.path.exists(trancheFilename):
+		#trancheFilename = Tn
+		urlParts = self.tranchePath.split('/')
+
+		localPath = os.path.join(TRANCHE_DOWNLOAD_LOCATION, *urlParts[:-1])
+		os.makedirs(localPath)
+		trancheFilename = urlParts[-1]
+		self.trancheFile = os.path.join(localPath, trancheFilename)
+
+		if not os.path.exists(self.trancheFile):
 			Tfile = requests.get(trancheUrl)
-			with open(trancheFilename, 'wb') as fh:
+			with open(self.trancheFile, 'wb') as fh:
 				fh.write(Tfile.content)
 		else:
 			print 'already have tranche file'
@@ -111,7 +125,7 @@ class TrancheReader():					# for fetchng/parsing tranche file
 	def getModel(self, modelNum):
 
 		if modelNum < self.currentModel:			# reload tranche modelfile if the server is requesting a ligand we've already passed
-			self.fh = gzip.open(self.name)
+			self.fh = gzip.open(self.tranchePath)
 
 		zincID = None
 		lines = []
@@ -141,10 +155,10 @@ class TrancheReader():					# for fetchng/parsing tranche file
 
 
 def test():
-	client = API()
-	tranche = client.nextTranche()
+	client = API('testUser', dev=True)
+	trancheID, tranche = client.nextTranche()
 
-	TR = TrancheReader(tranche)
+	TR = TrancheReader(trancheID, tranche)
 
 	for n in range(0, 4):
 		ligandNumber, receptors = client.nextLigand(tranche)
@@ -153,7 +167,7 @@ def test():
 
 
 def testSubmit():
-	client = API()
+	client = API('testUser', dev=True)
 	results = dict(
 		username='cosmo',
 		bestDG=-10.0,
