@@ -97,8 +97,8 @@ class API():						# API client for talking to server
 
 
 class TrancheReader():					# for fetchng/parsing tranche file
-	def __init__(self, trancheID, tranchePath, mirror='http://files.docking.org/'):
-		self.fileServer = mirror
+	def __init__(self, trancheID, tranchePath, mirror=None):
+		self.fileServer = mirror or 'http://files.docking.org/'
 		self.trancheID = trancheID
 		self.tranchePath = tranchePath				# as in, the url path on files.docker.org
 		self.currentModel = 0
