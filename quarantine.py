@@ -58,7 +58,7 @@ def jobLoop():
 	while True:
 
 		trancheID, tranche = client.nextTranche()		# contact server for a tranche assignment
-		TR = TrancheReader(trancheID, tranche)			# then download and open this tranche for reading
+		TR = TrancheReader(trancheID, tranche, mirror=client.mirror)			# then download and open this tranche for reading
 
 		# inner loop - which ligand models from this tranche file should we execute?
 		while True:

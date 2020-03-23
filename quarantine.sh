@@ -15,7 +15,7 @@ do
 	if [[ $? -eq 13 ]]; then
 		break
 	fi
-	sleep 5
+	sleep 60
 done
 
 

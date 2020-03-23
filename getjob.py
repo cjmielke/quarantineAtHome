@@ -45,6 +45,8 @@ class API():						# API client for talking to server
 	def __init__(self, username, dev=None):
 		self.username = username
 
+		self.mirror = None			# alternate ligand download locations
+
 		if dev is not None:
 			self.server = SERVER
 		else:
@@ -63,6 +65,7 @@ class API():						# API client for talking to server
 		#self.session.get("http://httpstat.us/503")
 
 	def _get(self, path):
+		# type: (str) -> dict
 		url = self.apiPath+path
 		print 'trying new retry session! ', url
 		#req = requests.get(url, timeout=5)
@@ -72,6 +75,7 @@ class API():						# API client for talking to server
 
 	def nextTranche(self):
 		j = self._get('/tranche/get')
+		self.mirror = j.get('mirror', None)
 		return j['id'], j['tranche']
 
 	def nextLigand(self, trancheID):
@@ -93,7 +97,8 @@ class API():						# API client for talking to server
 
 
 class TrancheReader():					# for fetchng/parsing tranche file
-	def __init__(self, trancheID, tranchePath):
+	def __init__(self, trancheID, tranchePath, mirror='http://files.docking.org/'):
+		self.fileServer = mirror
 		self.trancheID = trancheID
 		self.tranchePath = tranchePath				# as in, the url path on files.docker.org
 		self.currentModel = 0
@@ -105,7 +110,7 @@ class TrancheReader():					# for fetchng/parsing tranche file
 	def download(self):
 		Tn = self.tranchePath
 		#trancheUrl = 'http://files.docking.org/3D/%s/%s/%s' % (Tn[0:2], Tn[2:6], Tn)
-		trancheUrl = 'http://files.docking.org/' + self.tranchePath
+		trancheUrl = self.fileServer + self.tranchePath
 		print trancheUrl
 		# TRANCHE_FILE = 'tranche.pdbqt.gz'
 		#trancheFilename = Tn
