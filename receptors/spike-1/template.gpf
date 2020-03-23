@@ -1,0 +1,3 @@
+npts 60 50 48                        # num.grid points in xyz
+spacing 0.375                        # spacing(A)
+gridcenter     6.196 -1.355 68.534
