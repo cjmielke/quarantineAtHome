@@ -61,5 +61,5 @@ COPY .git /.git
 #CMD cd /model/ ; /AutoDock-GPU/bin/autodock_gpu_32wi -ffile chainE.maps.fld -lfile DCABRM.xaa_ligand_200.pdbqt -nrun 100
 
 
-ENTRYPOINT ["/client.sh"]
+ENTRYPOINT ["/quarantine.sh"]
 

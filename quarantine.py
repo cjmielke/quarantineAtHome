@@ -17,6 +17,20 @@ client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507
 sentry_errors_log = logging.getLogger("sentry.errors")
 sentry_errors_log.addHandler(logging.StreamHandler())
 
+
+
+
+#!/usr/bin/env python
+import signal
+import sys
+
+def signal_handler(sig, frame):
+	print('You pressed Ctrl+C!')
+	sys.exit(13)
+signal.signal(signal.SIGINT, signal_handler)
+print('Press Ctrl+C')
+#signal.pause()
+
 '''
 try:
 	1 / 0

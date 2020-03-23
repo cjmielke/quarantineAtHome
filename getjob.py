@@ -112,7 +112,7 @@ class TrancheReader():					# for fetchng/parsing tranche file
 		urlParts = self.tranchePath.split('/')
 
 		localPath = os.path.join(TRANCHE_DOWNLOAD_LOCATION, *urlParts[:-1])
-		os.makedirs(localPath)
+		if not os.path.exists(localPath): os.makedirs(localPath)
 		trancheFilename = urlParts[-1]
 		self.trancheFile = os.path.join(localPath, trancheFilename)
 

@@ -44,5 +44,5 @@ COPY .git /.git
 
 
 
-#RUN /client.sh
+ENTRYPOINT ["/quarantine.sh"]
 
