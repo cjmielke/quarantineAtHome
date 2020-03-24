@@ -1,11 +1,10 @@
 import gzip
 import json
 import os
-from subprocess import check_call
 
-import requests
 from urllib3 import Retry
 
+from docking.parsers import compressFile
 from settings import SERVER, API_V, PRODUCTION_SERVER, TRANCHE_DOWNLOAD_LOCATION
 
 '''
@@ -46,6 +45,7 @@ class API():						# API client for talking to server
 		self.username = username
 
 		self.mirror = None			# alternate ligand download locations
+		self.minEnergy = -7			# for binding energies lower than this threshold, upload autodock logfile
 
 		if dev is not None:
 			self.server = SERVER
@@ -84,14 +84,28 @@ class API():						# API client for talking to server
 	def trancheEOF(self, trancheID):
 		j = self._get('/tranches/%s/out' % trancheID)
 
-	def reportResults(self, data):
+	def reportResults(self, data, logFile):
 		data['user'] = self.username
 		url = self.apiPath + '/submitresults'
 		print url
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 		#resp = requests.post(url, data=json.dumps(data), headers=headers)
 		#resp = self.session.post(url, data=json.dumps(data), headers=headers, timeout=5)
-		resp = self.session.post(url, json=data, timeout=5)
+		if data['bestDG'] < self.minEnergy:
+			headers['Content-type'] = 'multipart/form-data'
+			headers = {'Content-type': 'multipart/form-data', 'Accept': 'text/plain'}
+			gz = compressFile(logFile)
+			files = {'document': open(gz, 'rb')}
+			files = [
+				('logfile', ('dock.dlg.gz', open(gz, 'rb'), 'application/octet')),
+				('data', ('data', json.dumps(data), 'application/json')),
+			]
+			#resp = self.session.post(url, timeout=5, files=files, headers=headers)
+			resp = self.session.post(url, files=files)
+		else:
+			files = None
+			resp = self.session.post(url, json=data, timeout=5, files=files, headers=headers)
+
 		print resp
 
 
@@ -161,37 +175,6 @@ class TrancheReader():					# for fetchng/parsing tranche file
 			lf.write(model)
 
 
-
-def test():
-	client = API('testUser', dev=True)
-	trancheID, tranche = client.nextTranche()
-
-	TR = TrancheReader(trancheID, tranche)
-
-	for n in range(0, 4):
-		ligandNumber, receptors = client.nextLigand(tranche)
-		print 'Server told us to work on ligand ', ligandNumber, receptors
-		zincID, model = TR.getModel(ligandNumber)
-
-
-def testSubmit():
-	client = API('testUser', dev=True)
-	results = dict(
-		username='cosmo',
-		bestDG=-10.0,
-		bestKi=10e-6,
-		receptor='spike',
-		algo='autodock4',
-		zincID='ZINC000130'
-	)
-	results['test'] = 1					# server will not save in DB
-	client.reportResults(results)
-
-
-if __name__ == '__main__':
-	test()
-	testSubmit()
-	#updateReceptors()
 
 
 

@@ -5,7 +5,8 @@ import sys
 import time
 from random import shuffle
 
-from docking import runAutodock, runAutogrid
+from docking.autodock import runAutodock
+from docking.autogrid import runAutogrid
 from getjob import API, TrancheReader
 
 parser = argparse.ArgumentParser()
@@ -83,7 +84,7 @@ def jobLoop():
 
 				start = time.time()
 				runAutogrid(cwd=dir)
-				results = runAutodock(cwd=dir)
+				results, logFile = runAutodock(cwd=dir)
 				end = time.time()
 				results['time'] = end-start
 				results['receptor'] = receptor
@@ -93,7 +94,7 @@ def jobLoop():
 				# FIXME - different autodock versions have different logfile formats - some don't export ligand name
 				#if
 
-				client.reportResults(results)
+				client.reportResults(results, logFile)
 
 
 
