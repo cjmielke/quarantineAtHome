@@ -1,11 +1,7 @@
 
 import string
 import os.path
-from MolKit import Read
-from AutoDockTools.DockingParameters import DockingParameters, DockingParameter4FileMaker, genetic_algorithm_list, \
-                genetic_algorithm_local_search_list4, local_search_list4,\
-                simulated_annealing_list4
-                
+
 
 
  
@@ -34,6 +30,11 @@ def usage():
 
 
 def prepDPF(cwd):
+
+    from MolKit import Read
+    from AutoDockTools.DockingParameters import DockingParameters, DockingParameter4FileMaker, genetic_algorithm_list, \
+        genetic_algorithm_local_search_list4, local_search_list4, \
+        simulated_annealing_list4
 
     receptor_filename = os.path.join(cwd, 'receptor.pdbqt')
     ligand_filename = os.path.join(cwd, 'ligand.pdbqt')
