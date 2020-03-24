@@ -13,3 +13,14 @@ numpy/*
 
 stdout.txt
 stderr.txt
+
+# temporary work artifacts
+# FIXME - these should be done in temp folders anyways
+receptors/*/*.fld
+receptors/*/*.xyz
+receptors/*/*.dlg
+receptors/*/initpop.txt
+receptors/*/autogrid.log
+
+# pycharm IDE
+.idea
