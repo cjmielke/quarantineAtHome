@@ -36,6 +36,7 @@ RUN pip install -r requirements.txt
 
 
 COPY *.py /
+COPY docking /docking/
 COPY *.sh /
 COPY receptors /receptors
 COPY .git /.git

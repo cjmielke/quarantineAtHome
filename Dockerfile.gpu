@@ -50,8 +50,6 @@ RUN pip install -r requirements.txt
 
 COPY *.py /
 COPY docking /docking/
-RUN ls
-RUN ls docking/
 COPY *.sh /
 COPY receptors /receptors
 COPY .git /.git
