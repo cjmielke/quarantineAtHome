@@ -45,7 +45,7 @@ class API():						# API client for talking to server
 		self.username = username
 
 		self.mirror = None			# alternate ligand download locations
-		self.minEnergy = -7			# for binding energies lower than this threshold, upload autodock logfile
+		self.minEnergy = -8			# for binding energies lower than this threshold, upload autodock logfile
 
 		if dev is not None:
 			self.server = SERVER
