@@ -4,3 +4,12 @@ ligand.pdbqt
 *.dlg
 *pdbqt.gz
 mgltools*
+
+# blocking for now
+docking/mglmin
+
+# numpy==1.8 required for mgltools
+numpy/*
+
+stdout.txt
+stderr.txt
