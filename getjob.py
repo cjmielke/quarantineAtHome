@@ -67,7 +67,6 @@ class API():						# API client for talking to server
 	def _get(self, path):
 		# type: (str) -> dict
 		url = self.apiPath+path
-		print 'trying new retry session! ', url
 		#req = requests.get(url, timeout=5)
 		req = self.session.get(url, timeout=5)
 		j = json.loads(req.text)

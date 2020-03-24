@@ -42,3 +42,5 @@ I'm no docker fanatic, but this needs to be portable to make it easier for parti
 Also, we're going to try using [boinc2docker](https://github.com/marius311/boinc-server-docker/blob/master/docs/cookbook.md) to deploy this on all systems
 
 ![alt text](img/dawg.jpg "Yo Dawg!")
+
+
