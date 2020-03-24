@@ -3,7 +3,6 @@ import os
 from subprocess import check_call
 
 from docking.parsers import parseLogfile
-from docking.prepareDPF import prepDPF
 
 #prepDPF(cwd)
 from settings import MGL_PATH
@@ -35,7 +34,10 @@ def prepDPFshell(cwd):
 def runAutodock(cwd=None):
 	if not cwd: cwd=os.getcwd()
 
+	# from docking.prepareDPF import prepDPF
+	# FIXME - must push these required libraries to github before using this in production
 	#prepDPF(cwd)
+
 	prepDPFshell(cwd)
 
 
