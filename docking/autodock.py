@@ -38,7 +38,7 @@ def runAutodock(cwd=None):
 	# FIXME - must push these required libraries to github before using this in production
 	#prepDPF(cwd)
 
-	prepDPFshell(cwd)
+	#prepDPFshell(cwd) # Disabling this to call it in parent function, since runs on CPU
 
 
 	logFile = os.path.join(cwd, 'docking.dlg')				# note - autodock-gpu always uses this filename, so we adopt it
