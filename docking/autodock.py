@@ -2,9 +2,11 @@ import glob
 import os
 from subprocess import check_call
 
+from docking.autogrid import prepGPFshell
 from docking.parsers import parseLogfile
 
 #prepDPF(cwd)
+from docking.prepareDPF import prepDPF
 from settings import MGL_PATH
 
 
@@ -34,28 +36,34 @@ def prepDPFshell(cwd):
 def runAutodock(cwd=None):
 	if not cwd: cwd=os.getcwd()
 
-	# from docking.prepareDPF import prepDPF
-	# FIXME - must push these required libraries to github before using this in production
-	#prepDPF(cwd)
-
-	prepDPFshell(cwd)
-
 
 	logFile = os.path.join(cwd, 'docking.dlg')				# note - autodock-gpu always uses this filename, so we adopt it
 	if os.path.exists(logFile): os.remove(logFile)
 
 
-	# later we will probably implement an API where the server indicates a preference for which docking algorithm to run
-	# for now, just checking if the compiled GPU version of autodock is available is sufficient
-	gpuBins = glob.glob('/AutoDock-GPU/bin/autodock_gpu_*')
-	if len(gpuBins) and os.path.exists(gpuBins[0]):
-		# /AutoDock-GPU/bin/autodock_gpu_32wi -ffile chainE.maps.fld -lfile DCABRM.xaa_ligand_200.pdbqt -nrun 100
-		cmd = [ gpuBins[0], '-ffile', 'receptor.maps.fld', '-lfile', 'ligand.pdbqt', '-nrun', '100' ]
-		algo = 'AD-gpu'
-	else:
-		cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
-		#cmd = [ 'autodock4', '-p', 'autodock.dpf']
-		algo = 'AD4'
+	if os.name =='nt':			# windows
+		prepDPF(cwd)
+		autodockBin = os.path.join(os.getcwd(), 'docking', 'win32', 'autodock4.exe')
+		cmd = [ autodockBin, '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
+		algo = 'AD4-win'
+
+	else:						# linux
+		prepDPFshell(cwd)
+
+		# Linux has both GPU and CPU versions
+
+		# later we will probably implement an API where the server indicates a preference for which docking algorithm to run
+		# for now, just checking if the compiled GPU version of autodock is available is sufficient
+		gpuBins = glob.glob('/AutoDock-GPU/bin/autodock_gpu_*')
+		if len(gpuBins) and os.path.exists(gpuBins[0]):
+			# /AutoDock-GPU/bin/autodock_gpu_32wi -ffile chainE.maps.fld -lfile DCABRM.xaa_ligand_200.pdbqt -nrun 100
+			cmd = [ gpuBins[0], '-ffile', 'receptor.maps.fld', '-lfile', 'ligand.pdbqt', '-nrun', '100' ]
+			algo = 'AD-gpu'
+		else:
+			cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
+			#cmd = [ 'autodock4', '-p', 'autodock.dpf']
+			algo = 'AD4'
+
 
 	#log = open(logFile, 'w')
 	ret = check_call(cmd, cwd=cwd)
