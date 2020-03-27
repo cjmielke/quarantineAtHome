@@ -51,7 +51,7 @@ General tips for troubleshooting docker quickly.
 * If process does not respond to ctrl+c, try launching it from a .sh file.
 * List processes: sudo docker ps
 * Kill all docker running: sudo docker kill $(docker ps -q)
-* Shell into docker instance (useful to move files or debug): sudo docker exec -it $DOCKERID /bin/bash
+* Shell into docker instance (useful to move files or debug): sudo docker exec -it $(docker ps -q) /bin/bash
 
 ##### Error: clGetPlatformIDs(): -1001
 This is an error due to libraries missing from the docker container, as may happen when mixing distros/repos.
@@ -60,9 +60,10 @@ First make sure your user is in the docker group (also helps with running withou
 
 Some people report that running with sudo helps. In complicated setups it may still fail because "libnvidia-ml.so" and other libraries may be missing from "/usr/lib/x86_64-linux-gnu/" within the container (typically part of NVIDIA driver package on the host). In that case you must manually copy these libraries into the container once:
 
+	export DOCKERID=`docker ps -q`
 	sudo docker cp /usr/lib/x86_64-linux-gnu/ $DOCKERID:/nvidia
 	sudo docker exec -it $DOCKERID /bin/bash
-	cp -a /nvidia/* /usr/lib/x86_64-linux-gnu/*
+	cp -a /nvidia/* /usr/lib/x86_64-linux-gnu/
 
 Once that is done, if you copy "nvidia-smi" or "deviceQuery" (from https://github.com/NVIDIA/cuda-samples.git) into the container it should work correctly as on the host. Without this fix "deviceQuery" gives you this error;
 
@@ -74,6 +75,10 @@ Once that is done, if you copy "nvidia-smi" or "deviceQuery" (from https://githu
 	-> CUDA driver version is insufficient for CUDA runtime version
 	Result = FAIL
 
+Also note if nvidia-smi fails on the host then you may need to re-run:
+
+	sudo apt-get install --reinstall nvidia-driver nvidia-kernel-dkms
+
 ##### nvidia-docker networking
 If experiencing issues, in debug mode particularly, maybe add "--net=host" to the nvidia-docker arguments.
 
@@ -84,6 +89,13 @@ Potential improvements:
 	* in-vivo - tested in man and animals, so we have some context about their toxicity
 	* biogenic / in-stock / for-sale - broader search for available chemicals
 * Have server analyze which tranche files have the most interesting ligands, try to assign multiple ligands from the same tranche file to the same client (avoids excessive downloading)
-* Multithreading and pipelining, 
-	* GPU version - CPU starts extracting next ligand and generates parameters while GPU is processing
-	* CPU verison - run multiple docking concurrently on physical CPU cores (not hyperthreading) (current hacky approach is to launch many containers in parallel)
+* [X] Multithreading and pipelining (currently in "gottaGoFast" branch)
+	* [X] GPU version - CPU starts extracting next ligand and generates parameters while GPU is processing
+	* [X] CPU verison - run multiple docking concurrently on physical CPU cores (not hyperthreading) (current hacky approach is to launch many containers in parallel)
+* [X] Molecule visualization at https://quarantine.infino.me/
+* Windows installer
+
+### BUGS
+Potential bugs to fix:
+* docking/parsers.py:34 occasionally gives "IndexError: list index out of range" on gottaGoFast branch
+* Fix or automate issue of missing NVIDIA GPU libraries in container from Troubleshooting section above?
