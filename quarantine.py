@@ -135,7 +135,7 @@ class CpuConsumer(multiprocessing.Process):
 		proc_name = self.name
 		print("CPU worker started")
 		while True:
-			while self.work_new.empty() or self.work_gpu.qsize() > jobs_to_cache:
+			while self.work_new.empty() or self.work_gpu.qsize() >= jobs_to_cache:
 				time.sleep(1)
 			dir, receptor, trancheID, ligandNum, client = self.work_new.get()
 			if dir is POISON_PILL: # poison pill to exit
@@ -163,7 +163,7 @@ class CpuConsumer(multiprocessing.Process):
 				client.reportResults(results, logFile)
 				shutil.rmtree(dir) # hack to remove temporaryDirectory w/o context (https://stackoverflow.com/questions/6884991/how-to-delete-a-directory-created-with-tempfile-mkdtemp)
 			else:
-				self.work_gpu.put(dir)	# hand work over to GPU
+				self.work_gpu.put([dir, receptor, trancheID, ligandNum, client])	# hand work over to GPU
 			self.work_new.task_done()
 			sys.stdout.flush()
 			print('CPU work_new='+str(self.work_new.qsize())+' GPU work_gpu='+str(self.work_gpu.qsize()))
@@ -182,7 +182,7 @@ class GpuConsumer(multiprocessing.Process):
 		while True:
 			while self.work_gpu.empty():
 				time.sleep(0.2)
-			dir, receptor, trancheID, ligandNum, client = work_gpu.get()
+			dir, receptor, trancheID, ligandNum, client = self.work_gpu.get()
 			if dir is POISON_PILL: # poison pill to exit
 				print('GPU {}: GPU exiting'.format(proc_name))
 				self.work_gpu.task_done()
