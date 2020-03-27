@@ -190,16 +190,19 @@ class GpuConsumer(multiprocessing.Process):
 			print('GPU {}: {}'.format(proc_name, dir))
 			start = time.time()
 			print('running docking algorithm on GPU in '+str(dir))
-			results, logFile = runAutodock(cwd=dir)
-			end = time.time()
-			results['time'] = end - start
-			results['receptor'] = receptor
-			results['tranche'] = trancheID
-			results['ligand'] = ligandNum
+			try:
+				results, logFile = runAutodock(cwd=dir) # Exception list index out of range in parsers.py:34 parseLogFile
+				end = time.time()
+				results['time'] = end - start
+				results['receptor'] = receptor
+				results['tranche'] = trancheID
+				results['ligand'] = ligandNum
 
-			# FIXME - different autodock versions have different logfile formats - some don't export ligand name
+				# FIXME - different autodock versions have different logfile formats - some don't export ligand name
 
-			client.reportResults(results, logFile)
+				client.reportResults(results, logFile)
+			except:
+				pass
 			shutil.rmtree(dir)
 
 			self.work_gpu.task_done()
