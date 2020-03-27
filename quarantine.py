@@ -22,7 +22,8 @@ client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507
 sentry_errors_log = logging.getLogger("sentry.errors")
 sentry_errors_log.addHandler(logging.StreamHandler())
 
-
+# Currently designed to be CPU or GPU centric processing, so you can launch one container of each type.
+# TODO maybe change autodock.py to allow using all CPUs + GPUs
 
 
 #!/usr/bin/env python
@@ -63,9 +64,10 @@ which tranche file should be processed.
 devmode = os.getenv('DEBUG')		# if set, enters developer mode (contacts local server
 USERNAME = os.getenv('ME')		# if set, enters developer mode (contacts local server
 
-jobs_to_cache = 5
+
 cpu_count = multiprocessing.cpu_count() / 2 # assume hyperthreading so ignore half the logical cores
 gpu_count = 1 # assuming one GPU job at a time, use nvidia-smi to see if you have <100% utilization
+jobs_to_cache = cpu_count # have one job per core available, or 3-5 jobs if GPU running
 POISON_PILL = "STOP"
 
 def fetchLoop(work_new):
@@ -74,7 +76,7 @@ def fetchLoop(work_new):
 
 	while True:
 
-		while work_new.qsize > jobs_to_cache:		# Puts the breaks on execution
+		while work_new.qsize() > jobs_to_cache:		# Puts the breaks on execution
 			time.sleep(1)
 
 		trancheID, tranche = client.nextTranche()		# contact server for a tranche assignment
@@ -84,7 +86,7 @@ def fetchLoop(work_new):
 		while True:
 			# get model number from server
 			ligandNum, receptors = client.nextLigand(trancheID)					# ask server which ligand model number to execute
-			print 'Server told us to work on model ', ligandNum
+			print('Server told us to work on model '+str(ligandNum))
 
 			try: zincID, model = TR.getModel(ligandNum)					# parse out of Tranche file
 			except StopIteration:
@@ -92,7 +94,7 @@ def fetchLoop(work_new):
 				break
 
 			for receptor in receptors:
-				print 'queueing docking algorithm on ', receptor
+				print('queueing docking algorithm on '+str(receptor))
 
 				# Creating a temporary directory per job
 				dir = tempfile.TemporaryDirectory()
@@ -104,7 +106,7 @@ def fetchLoop(work_new):
 					#sys.exit(1)
 
 				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))
-				sys.stdout.flush()
+				sys.stdout.flush()	# make sure child processes print
 	return
 
 # Run one of these per physical core
@@ -123,7 +125,7 @@ def cpuLoop(work_new, work_gpu):
 
 		# Tasks that may run on the GPU
 		if not isGPU():
-			print 'running docking algorithm on CPU in ', dir
+			print('running docking algorithm on CPU in '+str(dir))
 			results, logFile = runAutodock(cwd=dir)
 			end = time.time()
 			results['time'] = end - start
@@ -149,7 +151,7 @@ def gpuLoop(work_gpu):
 		dir = work_gpu.get()
 
 		start = time.time()
-		print 'running docking algorithm on GPU in ', dir
+		print('running docking algorithm on GPU in '+str(dir))
 		results, logFile = runAutodock(cwd=dir)
 		end = time.time()
 		results['time'] = end - start
@@ -177,8 +179,8 @@ def dispatchCenter():
 		worker_count = 1 + cpu_count
 	else: # is GPU
 		worker_count = 2 # no need for overkill, one fetch and one cpu for unpack
-	print "CPU workers count = " + str(cpu_count)
-	pool_cpu = multiprocessing.Pool(processes=worker_count)
+		jobs_to_cache = 3 # probably enough buffering to keep GPU fed, else up to 5
+	print("CPU workers count = "+str(cpu_count))
 
 	# Loops getting stuck, trying this approach https://stackoverflow.com/questions/29571671/basic-multiprocessing-with-while-loop
 	if isGPU():
@@ -195,10 +197,11 @@ def dispatchCenter():
 
 	print("Starting fetching process")
 	fetchLoop(work_new)
-	pool_gpu.close()
 	pool_cpu.close()
-	pool_gpu.join()
-	pool_cpu.close()
+	pool_cpu.join()
+	if isGPU():
+		pool_gpu.close()
+		pool_gpu.join()
 
 	return
 
