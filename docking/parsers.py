@@ -31,7 +31,11 @@ def parseLogfile(fileName):
 			if 'Estimated Free Energy of Binding' in line:
 				# for m in energyRE.findall(line):
 				#	print m
-				bindingEnergy = float(energyRE.findall(line)[0])
+				results = energyRE.findall(line)
+				if len(results) > 0:
+					bindingEnergy = float(results[0])
+				else:
+					bindingEnergy = float(66.6)
 				bindingEnergies.append(bindingEnergy)
 		'''
 		if 'AutoDock-GPU' in firstLine:		# GPU version makes slightly different logfiles

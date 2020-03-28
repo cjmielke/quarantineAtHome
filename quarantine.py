@@ -67,7 +67,7 @@ devmode = os.getenv('DEBUG')		# if set, enters developer mode (contacts local se
 USERNAME = os.getenv('ME')		# if set, enters developer mode (contacts local server
 
 cpu_count = multiprocessing.cpu_count() / 2 # assume hyperthreading so ignore half the logical cores
-gpu_count = 1 # assuming one GPU job at a time, use nvidia-smi to see if you have <100% utilization
+gpu_count = 2 # assuming one GPU job at a time, use nvidia-smi to see if you have <100% utilization
 jobs_to_cache = cpu_count # have one job per core available, or 3-5 jobs if GPU running
 POISON_PILL = "STOP"
 
