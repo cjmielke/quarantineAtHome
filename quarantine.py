@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 import sys
@@ -7,7 +8,10 @@ from random import shuffle
 
 from docking.autodock import runAutodock
 from docking.autogrid import runAutogrid
+from docking.parsers import LogParser
 from getjob import API, TrancheReader
+from settings import LOCAL_RESULTS_DIR
+from webgui import GUIServer
 
 parser = argparse.ArgumentParser()
 parser.parse_args()
@@ -53,8 +57,16 @@ devmode = os.getenv('DEBUG')		# if set, enters developer mode (contacts local se
 USERNAME = os.getenv('ME')		# if set, enters developer mode (contacts local server
 
 
+
+# make the GUI server and open a browser
+
+
+
 def jobLoop():
 	client = API(USERNAME, dev=devmode)
+
+	gui = GUIServer()
+	gui.startServer().openBrowser()
 
 	while True:
 
@@ -72,30 +84,50 @@ def jobLoop():
 				client.trancheEOF(trancheID)
 				break
 
-			for receptor in receptors:
-				print 'running docking algorithm on ', receptor
-				dir = os.path.join(os.getcwd(), 'receptors', receptor)
+			# these are saved so the frontend displays info on the active ligand
+			#TR.saveModel(model, outfile=os.path.join(LOCAL_RESULTS_DIR, 'ligand.pdbqt'))
+			TR.saveModel(model, outfile=os.path.join(os.getcwd(), 'ligand.pdbqt'))
+			#gui.ligand = zincID
 
+			for receptor in receptors:
+				#gui.receptor = receptor
+				#gui.update()
+				gui.nextJob(zincID, receptor)
+
+				# FIXME - write receptor download code
+				dir = os.path.join(os.getcwd(), 'receptors', receptor)
 				if not os.path.exists(dir):			# if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
 					raise ValueError("Don't have this receptor definition yet")
 					#sys.exit(1)
 
-				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))
+				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))					# job directory
+
 
 				start = time.time()
 				runAutogrid(cwd=dir)
-				results, logFile = runAutodock(cwd=dir)
+				#results, logFile = runAutodock(cwd=dir)
+				algo, logFile = runAutodock(cwd=dir)
+
+				p = LogParser(logFile)
+				results = p.results
+				results['algo'] = algo
 				end = time.time()
 				results['time'] = end-start
 				results['receptor'] = receptor
 				results['tranche'] = trancheID
 				results['ligand'] = ligandNum
 
-				# FIXME - different autodock versions have different logfile formats - some don't export ligand name
-				#if
+				jobID = client.reportResults(results, logFile)
 
-				client.reportResults(results, logFile)
+				#### Save local results for the client interface
 
+				localResults = os.path.join(LOCAL_RESULTS_DIR, receptor)
+				if not os.path.exists(localResults): os.makedirs(localResults)
+				p.saveTrajectory( os.path.join(localResults, 'lastTrajectory.pdbqt') )
+
+				with open('lastJob.json', 'w') as lf: json.dump(results, lf)
+
+				gui.jobFinished(jobID, results)
 
 
 if __name__ == '__main__':

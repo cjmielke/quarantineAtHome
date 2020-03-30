@@ -69,10 +69,12 @@ def runAutodock(cwd=None):
 	ret = check_call(cmd, cwd=cwd)
 	#log.close()
 
-	results = parseLogfile(logFile)
-	results['algo']=algo
+	#results = parseLogfile(logFile)
+	#results['algo']=algo
+	#return results, logFile
 
-	return results, logFile
+
+	return algo, logFile
 
 
 

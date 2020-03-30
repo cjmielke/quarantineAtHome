@@ -107,6 +107,8 @@ class API():						# API client for talking to server
 			resp = self.session.post(url, json=data, timeout=5, files=files, headers=headers)
 
 		print resp
+		j = json.loads(resp.text)
+		return j['id']
 
 
 class TrancheReader():					# for fetchng/parsing tranche file
