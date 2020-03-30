@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -100,6 +101,12 @@ class LogParser():
 			poseFile = os.path.join(outDir, 'pose%s.pdbqt' % (i+1))
 			with open(poseFile, 'w') as fh:
 				fh.writelines(pose)
+
+	'''
+	def saveResults(self, jsonFile):
+		with open(jsonFile, 'w') as fh:
+			json.dump(self.results, fh)
+	'''
 
 	def saveTrajectory(self, trajFile):
 		with open(trajFile, 'w') as fh:
