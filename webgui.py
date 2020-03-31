@@ -1,6 +1,7 @@
 import SimpleHTTPServer
 import SocketServer
 import json
+import multiprocessing
 import os
 import thread
 import time
@@ -96,6 +97,38 @@ class SettingsObj(JsonFile):
     def __init__(self):
         self.username = 'anonymous'
 
+class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def hook(self):     # something to be added after the fact
+        raise NotImplementedError
+
+    def translate_path(self, path):
+        # if '/static/' in path: path = path.replace('/static/', '/')
+        path = path.replace('/static/js/', '/')
+        path = path.replace('/static/', '/')
+        path = SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(self, path)
+        return path
+
+    def log_message(self, format, *args):
+        #BaseHTTPRequestHandler.log_message(self, format, *args)
+        return
+
+    def do_POST(self):
+        self.hook()
+        # self._set_headers()
+        print "in post method", self.testattrib
+        self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+
+        self.send_response(200)
+        self.end_headers()
+
+        data = simplejson.loads(self.data_string)
+        with open("config.json", "w") as outfile:
+            simplejson.dump(data, outfile)
+        print "{}".format(data)
+        # f = open("for_presen.py")
+        # self.wfile.write(f.read())
+        return
+
 
 class GUIServer():
     testattrib = None
@@ -126,37 +159,6 @@ class GUIServer():
         self.update()
 
 
-    class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-        def hook(self):     # something to be added after the fact
-            raise NotImplementedError
-
-        def translate_path(self, path):
-            # if '/static/' in path: path = path.replace('/static/', '/')
-            path = path.replace('/static/js/', '/')
-            path = path.replace('/static/', '/')
-            path = SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(self, path)
-            return path
-
-        def log_message(self, format, *args):
-            #BaseHTTPRequestHandler.log_message(self, format, *args)
-            return
-
-        def do_POST(self):
-            self.hook()
-            # self._set_headers()
-            print "in post method", self.testattrib
-            self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-
-            self.send_response(200)
-            self.end_headers()
-
-            data = simplejson.loads(self.data_string)
-            with open("config.json", "w") as outfile:
-                simplejson.dump(data, outfile)
-            print "{}".format(data)
-            # f = open("for_presen.py")
-            # self.wfile.write(f.read())
-            return
 
     # FIXME - this will eventually be where we handle post/config updates
     def outerHook(self):
@@ -167,12 +169,25 @@ class GUIServer():
         for n in range(40):
             tryport = DEFAULT_PORT+n
             try:
-                self.httpd = SocketServer.TCPServer(("", tryport), self.ServerHandler)
+                self.httpd = SocketServer.TCPServer(("", tryport), ServerHandler)
                 self.httpd.RequestHandlerClass.hook = self.outerHook
+
                 def start_server():
-                    self.httpd.serve_forever()
+                    while True:
+                        try:
+                            self.httpd.serve_forever()
+                        except:
+                            pass
                 # start the server in a background thread
                 thread.start_new_thread(start_server, ())
+
+                '''
+
+                server_process = multiprocessing.Process(target=self.httpd.serve_forever)
+                server_process.daemon = True
+                server_process.start()
+                '''
+
                 self.port = tryport
                 print 'Successfully started GUI server on port ', self.port
                 break       # leave the loop!
