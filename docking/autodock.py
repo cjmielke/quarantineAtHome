@@ -1,6 +1,5 @@
 import glob
 import os
-import resource
 from subprocess import check_call
 
 
