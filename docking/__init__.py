@@ -7,6 +7,7 @@ import sys
 MGL_LIBS = os.path.join(os.getcwd(), 'docking', 'mglmin')
 sys.path.append(MGL_LIBS)
 
+
 # check_call uses Popen args
 '''
 def __init__(self, args, bufsize=0, executable=None,

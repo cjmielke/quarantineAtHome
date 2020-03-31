@@ -39,12 +39,15 @@ def prepGPFshell(cwd):
 
 
 def runAutogrid(cwd=None):
-
-	#prepGPF(cwd)
-	prepGPFshell(cwd)
+	if os.name =='nt':
+		prepGPF(cwd)
+		autogridBin = os.path.join(os.getcwd(), 'docking', 'win32', 'autogrid4.exe')
+	else:
+		prepGPFshell(cwd)
+		autogridBin = 'autogrid4'
 
 	# ENV PATH="/mgltools_x86_64Linux2_1.5.6/bin:${PATH}"
-	autogridCmd = [ 'autogrid4', '-p', 'autogrid.gpf', '-l', 'autogrid.log' ]
+	autogridCmd = [ autogridBin, '-p', 'autogrid.gpf', '-l', 'autogrid.log' ]
 
 	fo = open("stdout.txt", "w")
 	fe = open("stderr.txt", "w")
