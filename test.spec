@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['test.py'],
+a = Analysis(['quarantine.py'],
              pathex=['docking/mglmin', 'E:\\quarantineAtHome'],
              binaries=[],
              datas=[],
@@ -36,7 +36,6 @@ exe = EXE(pyz,
           runtime_tmpdir=None,
           console=True )
 
-
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -45,3 +44,5 @@ coll = COLLECT(exe,
                upx=True,
                upx_exclude=[],
                name='test')
+
+

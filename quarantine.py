@@ -97,7 +97,7 @@ def jobLoop():
 				# FIXME - write receptor download code
 				dir = os.path.join(os.getcwd(), 'receptors', receptor)
 				if not os.path.exists(dir):			# if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
-					raise ValueError("Don't have this receptor definition yet")
+					raise ValueError("Don't have this receptor definition yet   ", dir)
 					#sys.exit(1)
 
 				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))					# job directory
