@@ -5,12 +5,11 @@ import os
 import thread
 import time
 import webbrowser
-from BaseHTTPServer import BaseHTTPRequestHandler
 
-import requests
 import simplejson as simplejson
 
 from settings import LOCAL_RESULTS_DIR
+from util import downloadFile, getwd
 
 DEFAULT_PORT = 7777
 
@@ -36,18 +35,6 @@ DEV = True
 DEV = os.getenv('DEBUG')		# if set, enters developer mode (contacts local server
 
 
-# the local client page and javascript will be kept on the main server - allowing upgrades
-def downloadFile(src, dest, replace=True):
-    if dest is None or dest == '': dest = src.split('/')[-1]
-
-    if not replace and os.path.exists(dest):
-        print 'already have ', dest
-
-    R = requests.get(src)
-    with open(dest, 'wb') as fh:
-        fh.write(R.content)
-
-
 def prepServer():
     '''
     The client GUI is just a minimal webpage (html and javascript) that
@@ -70,7 +57,7 @@ def prepServer():
         host = 'https://quarantine.infino.me/'  # FIXME
 
     for src, dest in lis:
-        downloadFile(host+src, dest)
+        downloadFile(host + src, dest)
 
 
     # set up results area
@@ -125,7 +112,7 @@ class GUIServer():
         For now im lazy so I just write a file
         In the future, this can just be served from memory ....
         '''
-        self.updateObj.save('update.json')
+        self.updateObj.save(os.path.join(getwd(), 'update.json' ))
 
     def nextJob(self, zincID, receptor):
         print 'running docking algorithm on ', receptor         # serves commandline interface
@@ -202,7 +189,12 @@ class GUIServer():
 
     def openBrowser(self):
         url = 'http://127.0.0.1:'+str(self.port)
-        webbrowser.open(url, new=1)
+
+        def delayedStart():                     # wait a few seconds to start, but return immediately
+            time.sleep(4)
+            webbrowser.open(url, new=1)
+        thread.start_new_thread(delayedStart, ())
+
         return self
 
 

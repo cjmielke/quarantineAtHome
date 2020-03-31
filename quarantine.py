@@ -11,6 +11,7 @@ from docking.autogrid import runAutogrid
 from docking.parsers import LogParser
 from getjob import API, TrancheReader
 from settings import LOCAL_RESULTS_DIR
+from util import getwd
 from webgui import GUIServer
 
 parser = argparse.ArgumentParser()
@@ -22,7 +23,9 @@ client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507
 sentry_errors_log = logging.getLogger("sentry.errors")
 sentry_errors_log.addHandler(logging.StreamHandler())
 
-
+#print os.getcwd()
+#print getwd()
+#sys.exit(0)
 
 
 #!/usr/bin/env python
@@ -86,7 +89,7 @@ def jobLoop():
 
 			# these are saved so the frontend displays info on the active ligand
 			#TR.saveModel(model, outfile=os.path.join(LOCAL_RESULTS_DIR, 'ligand.pdbqt'))
-			TR.saveModel(model, outfile=os.path.join(os.getcwd(), 'ligand.pdbqt'))
+			TR.saveModel(model, outfile=os.path.join(getwd(), 'ligand.pdbqt'))
 			#gui.ligand = zincID
 
 			for receptor in receptors:
@@ -95,7 +98,8 @@ def jobLoop():
 				gui.nextJob(zincID, receptor)
 
 				# FIXME - write receptor download code
-				dir = os.path.join(os.getcwd(), 'receptors', receptor)
+				#dir = os.path.join(os.getcwd(), 'receptors', receptor)
+				dir = os.path.join(getwd(), 'receptors', receptor)
 				if not os.path.exists(dir):			# if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
 					raise ValueError("Don't have this receptor definition yet   ", dir)
 					#sys.exit(1)
