@@ -37,7 +37,8 @@ import requests
 from requests.adapters import HTTPAdapter
 #from requests.packages.urllib3.util.retry import Retry
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 class API():						# API client for talking to server

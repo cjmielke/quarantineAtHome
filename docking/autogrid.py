@@ -2,6 +2,7 @@ import os
 from subprocess import check_call
 
 from docking.prepareGPF import prepGPF
+from util import getwd
 
 
 def prepGPFshell(cwd):
@@ -41,7 +42,7 @@ def prepGPFshell(cwd):
 def runAutogrid(cwd=None):
 	if os.name =='nt':
 		prepGPF(cwd)
-		autogridBin = os.path.join(os.getcwd(), 'docking', 'win32', 'autogrid4.exe')
+		autogridBin = os.path.join(getwd(), 'docking', 'win32', 'autogrid4.exe')
 	else:
 		prepGPFshell(cwd)
 		autogridBin = 'autogrid4'
@@ -49,6 +50,7 @@ def runAutogrid(cwd=None):
 	# ENV PATH="/mgltools_x86_64Linux2_1.5.6/bin:${PATH}"
 	autogridCmd = [ autogridBin, '-p', 'autogrid.gpf', '-l', 'autogrid.log' ]
 
-	fo = open("stdout.txt", "w")
-	fe = open("stderr.txt", "w")
+	fo = open(os.path.join(getwd(), "stdout.txt"), "w")
+	fe = open(os.path.join(getwd(), "stderr.txt"), "w")
 	ret = check_call(autogridCmd, cwd=cwd, stdout=fo, stderr=fe)
+
