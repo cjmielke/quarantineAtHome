@@ -2,7 +2,6 @@ import glob
 import os
 from subprocess import check_call
 
-from docking.autogrid import prepGPFshell
 from docking.parsers import parseLogfile
 
 #prepDPF(cwd)
@@ -64,8 +63,21 @@ def runAutodock(cwd=None):
 			#cmd = [ 'autodock4', '-p', 'autodock.dpf']
 			algo = 'AD4'
 
+	'''
+	def setlimits():
+		print "Setting resource limit in child (pid %d)" % os.getpid()
+		resource.setrlimit(resource.RLIMIT_CPU, (1, 1))
+
+	def preexec_fn():
+		pid = os.getpid()
+		ps = psutil.Process(pid)
+		ps.set_nice(10)
+		resource.setrlimit(resource.RLIMIT_CPU, (1, 1))
+	os.nice(10)
+	'''
 
 	#log = open(logFile, 'w')
+	#ret = check_call(cmd, cwd=cwd, preexec_fn=lambda: os.nice(20))
 	ret = check_call(cmd, cwd=cwd)
 	#log.close()
 
