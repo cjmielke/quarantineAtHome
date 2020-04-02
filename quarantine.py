@@ -1,3 +1,11 @@
+from updates import doUpdate, __version__
+doUpdate()
+import sys
+print 'Current version is : ', __version__
+#sys.exit(1)
+
+
+
 import argparse
 import json
 import logging

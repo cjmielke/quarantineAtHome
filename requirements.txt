@@ -4,6 +4,11 @@ requests
 raven
 simplejson
 
-PyInstaller==3.1
-dsdev-utils==0.9.2
-pyupdater==2.2.0
+#dsdev-utils==0.9.2		# from the example
+#PyInstaller==3.1			# from the example
+#pyupdater==2.2.0			# from the example
+
+PyInstaller==3.6
+PyUpdater==3.1.1
+
+
