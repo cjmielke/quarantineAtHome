@@ -6,6 +6,7 @@ import os
 import thread
 import time
 import webbrowser
+from BaseHTTPServer import HTTPServer
 
 import simplejson as simplejson
 
@@ -108,6 +109,15 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         path = SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(self, path)
         return path
 
+    def end_headers(self):
+        self.addMyHeaders()
+        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
+
+    def addMyHeaders(self):
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+
     def log_message(self, format, *args):
         #BaseHTTPRequestHandler.log_message(self, format, *args)
         return
@@ -128,6 +138,9 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         # f = open("for_presen.py")
         # self.wfile.write(f.read())
         return
+
+class ThreadedHTTPServer(SocketServer.ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
 
 
 class GUIServer():
@@ -169,34 +182,38 @@ class GUIServer():
         for n in range(40):
             tryport = DEFAULT_PORT+n
             try:
-                self.httpd = SocketServer.TCPServer(("", tryport), ServerHandler)
+                #self.httpd = SocketServer.TCPServer(("", tryport), ServerHandler)
+                host = 'localhost'
+                host = ''
+                self.httpd = ThreadedHTTPServer((host, tryport), ServerHandler)
                 self.httpd.RequestHandlerClass.hook = self.outerHook
-
-                def start_server():
-                    while True:
-                        try:
-                            self.httpd.serve_forever()
-                        except:
-                            pass
-                # start the server in a background thread
-                thread.start_new_thread(start_server, ())
-
-                '''
-
-                server_process = multiprocessing.Process(target=self.httpd.serve_forever)
-                server_process.daemon = True
-                server_process.start()
-                '''
-
                 self.port = tryport
+
                 print 'Successfully started GUI server on port ', self.port
-                break       # leave the loop!
+                break  # leave the loop!
             except Exception as e:
-                print e.message
-                print 'This port is used, trying next'
-                #if 'Address already in use' in e.message:
-                #    print 'This port is used, trying next'
-                #else: raise
+                # print 'This port is used, trying next'
+                if 'Address already in use' in e.message:
+                    print 'This port is used, trying next'
+                else:
+                    raise
+
+        '''
+        def start_server():
+            while True:
+                try:
+                    self.httpd.serve_forever()
+                except:
+                    pass
+        # start the server in a background thread
+        thread.start_new_thread(start_server, ())
+
+        '''
+
+        server_process = multiprocessing.Process(target=self.httpd.serve_forever)
+        server_process.daemon = True
+        server_process.start()
+
 
         if not self.httpd:
             raise ValueError('Could not start local webserver')         # FIXME - fallback to commandline client?
