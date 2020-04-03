@@ -3,3 +3,12 @@ numpy==1.8		# needed for mgltools libs
 requests
 raven
 simplejson
+
+#dsdev-utils==0.9.2		# from the example
+#PyInstaller==3.1			# from the example
+#pyupdater==2.2.0			# from the example
+
+PyInstaller==3.6
+PyUpdater==3.1.1
+
+
