@@ -4,7 +4,6 @@ from subprocess import check_call
 from docking.prepareGPF import prepGPF
 from util import getwd
 
-
 def prepGPFshell(cwd):
 
 	mglPath = os.path.join(os.getcwd(), 'mgltools_x86_64Linux2_1.5.6')
