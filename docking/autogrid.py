@@ -1,4 +1,5 @@
 import os
+import platform
 from subprocess import check_call
 
 from docking.prepareGPF import prepGPF
@@ -42,6 +43,9 @@ def runAutogrid(cwd=None):
 	if os.name =='nt':
 		prepGPF(cwd)
 		autogridBin = os.path.join(getwd(), 'docking', 'win32', 'autogrid4.exe')
+	elif platform.system()=='Darwin':
+		prepGPF(cwd)
+		autogridBin = os.path.join(getwd(), 'docking', 'MacOSX', 'autogrid4')
 	else:
 		prepGPFshell(cwd)
 		autogridBin = 'autogrid4'

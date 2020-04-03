@@ -1,5 +1,6 @@
 import glob
 import os
+import platform
 from subprocess import check_call
 
 
@@ -44,6 +45,12 @@ def runAutodock(cwd=None):
 		autodockBin = os.path.join(getwd(), 'docking', 'win32', 'autodock4.exe')
 		cmd = [ autodockBin, '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
 		algo = 'AD4-win'
+
+	elif platform.system()=='Darwin':
+		prepDPF(cwd)
+		autodockBin = os.path.join(getwd(), 'docking', 'MacOSX', 'autodock4')
+		cmd = [ autodockBin, '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
+		algo = 'AD4-osx'
 
 	else:						# linux
 		prepDPFshell(cwd)
