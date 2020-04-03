@@ -2,7 +2,6 @@ import glob
 import os
 from subprocess import check_call
 
-from docking.parsers import parseLogfile
 
 #prepDPF(cwd)
 from docking.prepareDPF import prepDPF
@@ -63,6 +62,7 @@ def runAutodock(cwd=None):
 			cmd = [ 'autodock4', '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
 			#cmd = [ 'autodock4', '-p', 'autodock.dpf']
 			algo = 'AD4'
+
 
 	'''
 	def setlimits():
