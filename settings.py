@@ -17,4 +17,4 @@ TRANCHE_DOWNLOAD_LOCATION = os.path.join(os.getcwd(), 'downloads')
 
 MGL_PATH = os.path.join(os.getcwd(), 'mgltools_x86_64Linux2_1.5.6')
 
-
+LOCAL_RESULTS_DIR = os.path.join( os.getcwd(), 'results' )

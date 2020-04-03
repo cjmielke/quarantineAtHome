@@ -39,7 +39,8 @@ def prepDPF(cwd):
     receptor_filename = os.path.join(cwd, 'receptor.pdbqt')
     ligand_filename = os.path.join(cwd, 'ligand.pdbqt')
     dpf_filename = os.path.join(cwd, 'autodock.dpf')
-    template_filename = os.path.join(cwd, 'template.dpf')
+    #template_filename = os.path.join(cwd, 'template.dpf')
+    template_filename = None
 
     flexres_filename = None
     parameters = []
