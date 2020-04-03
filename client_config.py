@@ -3,8 +3,8 @@ class ClientConfig(object):
     APP_NAME = 'QuarantineAtHome'
     COMPANY_NAME = 'Project InfinoMe'
     UPDATE_URLS = [
-        'https://cjmielke.github.io/quarantine-files/updates/'
-        'https://quarantine.infino.me/static/updates/',
+        'https://cjmielke.github.io/quarantine-files/updates/',
+        #'https://quarantine.infino.me/static/updates/'
     ]
     MAX_DOWNLOAD_RETRIES = 3
 
