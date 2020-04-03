@@ -10,8 +10,8 @@ from BaseHTTPServer import HTTPServer
 
 import simplejson as simplejson
 
-from settings import LOCAL_RESULTS_DIR
-from util import downloadFile, getwd
+from settings import LOCAL_RESULTS_DIR, getwd
+from util import downloadFile
 
 DEFAULT_PORT = 7777
 

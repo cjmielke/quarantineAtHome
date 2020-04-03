@@ -5,8 +5,7 @@ from subprocess import check_call
 
 #prepDPF(cwd)
 from docking.prepareDPF import prepDPF
-from settings import MGL_PATH
-from util import getwd
+from settings import MGL_PATH, getwd
 
 
 def prepDPFshell(cwd):
