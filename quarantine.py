@@ -1,3 +1,11 @@
+from updates import doUpdate, __version__
+doUpdate()
+import sys
+print 'Current version is : ', __version__
+#sys.exit(1)
+
+
+
 import argparse
 import json
 import logging
@@ -10,8 +18,8 @@ from docking.autodock import runAutodock
 from docking.autogrid import runAutogrid
 from docking.parsers import LogParser
 from getjob import API, TrancheReader
-from settings import LOCAL_RESULTS_DIR
-from util import getwd
+from settings import LOCAL_RESULTS_DIR, getwd
+from util import Receptor
 from webgui import GUIServer
 
 parser = argparse.ArgumentParser()
@@ -92,32 +100,31 @@ def jobLoop():
 			TR.saveModel(model, outfile=os.path.join(getwd(), 'ligand.pdbqt'))
 			#gui.ligand = zincID
 
-			for receptor in receptors:
+			for receptorName in receptors:
+
+				receptor = Receptor(receptorName)
+
+				workDir = receptor.dir
+
 				#gui.receptor = receptor
 				#gui.update()
-				gui.nextJob(zincID, receptor)
+				gui.nextJob(zincID, receptor.name)
 
-				# FIXME - write receptor download code
-				#dir = os.path.join(os.getcwd(), 'receptors', receptor)
-				dir = os.path.join(getwd(), 'receptors', receptor)
-				if not os.path.exists(dir):			# if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
-					raise ValueError("Don't have this receptor definition yet   ", dir)
-					#sys.exit(1)
 
-				TR.saveModel(model, outfile=os.path.join(dir, 'ligand.pdbqt'))					# job directory
+				TR.saveModel(model, outfile=os.path.join(workDir, 'ligand.pdbqt'))					# job directory
 
 
 				start = time.time()
-				runAutogrid(cwd=dir)
+				runAutogrid(cwd=workDir)
 				#results, logFile = runAutodock(cwd=dir)
-				algo, logFile = runAutodock(cwd=dir)
+				algo, logFile = runAutodock(cwd=workDir)
 
 				p = LogParser(logFile)
 				results = p.results
 				results['algo'] = algo
 				end = time.time()
 				results['time'] = end-start
-				results['receptor'] = receptor
+				results['receptor'] = receptor.name
 				results['tranche'] = trancheID
 				results['ligand'] = ligandNum
 
@@ -125,7 +132,8 @@ def jobLoop():
 
 				#### Save local results for the client interface
 
-				localResults = os.path.join(LOCAL_RESULTS_DIR, receptor)
+				# FIXME - this is an incomplete implementation of the gui for showing completed results
+				localResults = os.path.join(LOCAL_RESULTS_DIR, receptor.name)
 				if not os.path.exists(localResults): os.makedirs(localResults)
 				p.saveTrajectory( os.path.join(localResults, 'lastTrajectory.pdbqt') )
 

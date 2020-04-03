@@ -2,7 +2,7 @@ import os
 from subprocess import check_call
 
 from docking.prepareGPF import prepGPF
-from util import getwd
+from settings import getwd
 
 
 def prepGPFshell(cwd):
