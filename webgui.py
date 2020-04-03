@@ -9,8 +9,8 @@ import webbrowser
 
 import simplejson as simplejson
 
-from settings import LOCAL_RESULTS_DIR
-from util import downloadFile, getwd
+from settings import LOCAL_RESULTS_DIR, getwd
+from util import downloadFile
 
 DEFAULT_PORT = 7777
 
@@ -192,10 +192,11 @@ class GUIServer():
                 print 'Successfully started GUI server on port ', self.port
                 break       # leave the loop!
             except Exception as e:
-                #print 'This port is used, trying next'
-                if 'Address already in use' in e.message:
-                    print 'This port is used, trying next'
-                else: raise
+                print e.message
+                print 'This port is used, trying next'
+                #if 'Address already in use' in e.message:
+                #    print 'This port is used, trying next'
+                #else: raise
 
         if not self.httpd:
             raise ValueError('Could not start local webserver')         # FIXME - fallback to commandline client?
