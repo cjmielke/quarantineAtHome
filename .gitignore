@@ -23,4 +23,5 @@ receptors/*/initpop.txt
 receptors/*/autogrid.log
 
 # pycharm IDE
-.idea
+.ideabuild
+dist

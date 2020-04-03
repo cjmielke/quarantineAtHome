@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['quarantine.py'],
-             pathex=['C:\\Users\\14157\\Desktop\\qah'],
+             pathex=['C:\\Users\\14157\\Desktop\\qah', 'C:\\Users\\14157\\Desktop\\qah\\docking\\mglmin'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -18,6 +18,7 @@ a = Analysis(['quarantine.py'],
 
 a.datas += Tree('./receptors', prefix='receptors')
 a.datas += Tree('./docking/win32', prefix='docking/win32')
+a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
 
 
 pyz = PYZ(a.pure, a.zipped_data,

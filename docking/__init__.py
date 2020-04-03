@@ -3,9 +3,12 @@ import sys
 
 #MGL_LIBS = os.path.join(os.getcwd(), 'mgltools_x86_64Linux2_1.5.6', 'MGLToolsPckgs')
 #sys.path.append(MGL_LIBS)
+from util import getwd
 
-MGL_LIBS = os.path.join(os.getcwd(), 'docking', 'mglmin')
+MGL_LIBS = os.path.join(getwd(), 'docking', 'mglmin')
 sys.path.append(MGL_LIBS)
+#print MGL_LIBS
+#sys.exit(0)
 
 
 # check_call uses Popen args

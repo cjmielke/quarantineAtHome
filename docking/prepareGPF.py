@@ -1,7 +1,6 @@
 import os
 import sys
 
-
 def prepGPF(cwd):
 	'''Extracted from MGLtools - this recreates key script steps and runs library with newer interpreter .....'''
 

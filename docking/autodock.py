@@ -6,6 +6,7 @@ from subprocess import check_call
 #prepDPF(cwd)
 from docking.prepareDPF import prepDPF
 from settings import MGL_PATH
+from util import getwd
 
 
 def prepDPFshell(cwd):
@@ -41,7 +42,7 @@ def runAutodock(cwd=None):
 
 	if os.name =='nt':			# windows
 		prepDPF(cwd)
-		autodockBin = os.path.join(os.getcwd(), 'docking', 'win32', 'autodock4.exe')
+		autodockBin = os.path.join(getwd(), 'docking', 'win32', 'autodock4.exe')
 		cmd = [ autodockBin, '-p', 'autodock.dpf', '-l', 'docking.dlg' ]
 		algo = 'AD4-win'
 
