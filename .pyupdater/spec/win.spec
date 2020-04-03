@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['C:\\Users\\14157\\Desktop\\quarantineAtHome\\quarantine.py'],
              pathex=[
                 'C:\\Users\\14157\\Desktop\\quarantineAtHome',
-                u'C:\\Users\\14157\\Desktop\\quarantineAtHome\\.pyupdater\\spec',
+                'C:\\Users\\14157\\Desktop\\quarantineAtHome\\.pyupdater\\spec',
                 'C:\\Users\\14157\\Desktop\\qah\\docking\\mglmin'
                 ],
              binaries=[],
@@ -21,7 +21,7 @@ a = Analysis(['C:\\Users\\14157\\Desktop\\quarantineAtHome\\quarantine.py'],
              noarchive=False)
 
 a.datas += Tree('./docking/win32', prefix='docking/win32')
-a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')        # FIXME - needed?
+a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
