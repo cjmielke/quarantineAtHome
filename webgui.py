@@ -6,7 +6,7 @@ import os
 import thread
 import time
 import webbrowser
-from BaseHTTPServer import HTTPServer
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 import simplejson as simplejson
 
@@ -33,7 +33,7 @@ it triggers an interface update that
 # for testing
 # curl -d '{"name":"anonymous"}' -H "Content-Type: application/json" http://172.19.0.2:7778/
 
-DEV = True
+#DEV = True
 DEV = os.getenv('DEBUG')		# if set, enters developer mode (contacts local server
 
 
@@ -46,10 +46,17 @@ def prepServer():
     - instant updates, since the client can just fetch new versions
     '''
 
+    '''      Versioned ....
+        ('/client/index-v1.html', 'index.html'),                     <-    always save to index.html locally, but server-side can have multiple routes+templates 
+        ('/static/js/client.min.v1.js', ''),               <- production       just change filename in assets.py, and commit old ones to git repo
+        ('/static/js/client.v1.js', ''),             <- dev mode
+    '''
+
+
     lis = [
-        ('/client/index.html', ''),
-        ('/static/js/client.min.js', ''),
-        ('/static/js/clientcoffee.js', ''),
+        ('/client/index-v1.html', 'index.html'),
+        #('/static/js/client.min.js', ''),
+        ('/static/js/client.v1.js', ''),
     ]
 
 
@@ -78,14 +85,13 @@ prepServer()
 
 
 
-
+# ======== Config objects - serialized to disk with JSON
 
 class JsonFile():
     def save(self, fileName):
         with open(fileName, 'w') as lf:
             results = self.__dict__
             json.dump(results, lf)
-
 
 class UpdateObj(JsonFile):
     def __init__(self):
@@ -98,41 +104,41 @@ class SettingsObj(JsonFile):
     def __init__(self):
         self.username = 'anonymous'
 
+
+# ===============
+
+
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    def hook(self):     # something to be added after the fact
+    def hook(self, data):     # something to be added after the fact
         raise NotImplementedError
 
-    def translate_path(self, path):
+    def translate_path(self, path):             # for rewriting paths
         # if '/static/' in path: path = path.replace('/static/', '/')
         path = path.replace('/static/js/', '/')
         path = path.replace('/static/', '/')
         path = SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(self, path)
         return path
 
-    def end_headers(self):
-        self.addMyHeaders()
-        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
-
-    def addMyHeaders(self):
+    def end_headers(self):                      # disable browser cache
         self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         self.send_header("Pragma", "no-cache")
         self.send_header("Expires", "0")
+        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)         # dont forget this!
 
-    def log_message(self, format, *args):
-        #BaseHTTPRequestHandler.log_message(self, format, *args)
+    def log_message(self, format, *args):       # suppress some logs
+        if 'GET /update.json' in args[0]: return
+        BaseHTTPRequestHandler.log_message(self, format, *args)
         return
 
-    def do_POST(self):
-        self.hook()
-        # self._set_headers()
-        print "in post method", self.testattrib
+    def do_POST(self):                          # eventually needed to allow user to set username
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-
         self.send_response(200)
         self.end_headers()
 
         data = simplejson.loads(self.data_string)
-        with open("config.json", "w") as outfile:
+        self.hook(data)
+
+        with open("settings.json", "w") as outfile:
             simplejson.dump(data, outfile)
         print "{}".format(data)
         # f = open("for_presen.py")
@@ -142,9 +148,9 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 class ThreadedHTTPServer(SocketServer.ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
 
+#DD = {}
 
 class GUIServer():
-    testattrib = None
 
     def __init__(self):
 
@@ -153,10 +159,24 @@ class GUIServer():
         self.updateObj = UpdateObj()
         self.settings = SettingsObj()
 
+        #global DD
+        #self.postData = DD
+        self.postData = {}
+
+        '''
+        self.jobListFile = os.path.join(getwd(), 'jobs.txt')
+        self.jobList = []
+        if os.path.exists(self.jobListFile):
+            with open(self.jobListFile, 'r') as jl:
+                for row in jl:
+                    rDict = json.loads(row)
+                    self.jobList.append(rDict)
+        '''
+
     def update(self):
         '''
-        For now im lazy so I just write a file
-        In the future, this can just be served from memory ....
+        For now im lazy so I just write a file that client JS polls ....
+        In the future, serve from memory .... or use websocket
         '''
         self.updateObj.save(os.path.join(getwd(), 'update.json' ))
 
@@ -174,17 +194,20 @@ class GUIServer():
 
 
     # FIXME - this will eventually be where we handle post/config updates
-    def outerHook(self):
-        print 'you have successfully replaced it!'
+    def outerHook(self, data):
+        print 'you have successfully replaced it!', data
+        self.postData = data
+
 
     def startServer(self):
 
+        # silly way of finding an ephemeral port .... there are better ways : https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number
         for n in range(40):
             tryport = DEFAULT_PORT+n
             try:
                 #self.httpd = SocketServer.TCPServer(("", tryport), ServerHandler)
                 host = 'localhost'
-                host = ''
+                if DEV : host = ''
                 self.httpd = ThreadedHTTPServer((host, tryport), ServerHandler)
                 self.httpd.RequestHandlerClass.hook = self.outerHook
                 self.port = tryport
@@ -198,22 +221,21 @@ class GUIServer():
                 else:
                     raise
 
-        '''
-        def start_server():
+        # threading mode
+        def startThread():
             while True:
-                try:
-                    self.httpd.serve_forever()
-                except:
-                    pass
+                try: self.httpd.serve_forever()
+                except: time.sleep(2)
         # start the server in a background thread
-        thread.start_new_thread(start_server, ())
+        thread.start_new_thread(startThread, ())
 
+        # FIXME - would love to run webserver as a separate process, but then I lose shared variables
         '''
-
+        # multiprocessing mode
         server_process = multiprocessing.Process(target=self.httpd.serve_forever)
         server_process.daemon = True
         server_process.start()
-
+        '''
 
         if not self.httpd:
             raise ValueError('Could not start local webserver')         # FIXME - fallback to commandline client?
@@ -251,9 +273,9 @@ if __name__=='__main__':
     wg = GUIServer().startServer()#.openBrowser()
 
     while True:
-        #print 'still executing'
+        #print 'still executing', wg.postData
         #print httpd
-        time.sleep(4)
+        time.sleep(1)
 
     #print "serving at port", DEFAULT_PORT
     #httpd.serve_forever()
