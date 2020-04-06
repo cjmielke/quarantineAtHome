@@ -124,7 +124,7 @@ def jobLoop():
 				results['tranche'] = trancheID
 				results['ligand'] = ligandNum
 
-				jobID = client.reportResults(results, logFile)
+				jobID = client.reportResults(results, logFile, username=gui.settings.username)
 
 				#### Save local results for the client interface
 

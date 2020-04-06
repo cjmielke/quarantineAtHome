@@ -85,7 +85,8 @@ class API():						# API client for talking to server
 	def trancheEOF(self, trancheID):
 		j = self._get('/tranches/%s/out' % trancheID)
 
-	def reportResults(self, data, logFile):
+	def reportResults(self, data, logFile, username=None):
+		if username: self.username=username
 		data['user'] = self.username
 		url = self.apiPath + '/submitresults'
 		print url
