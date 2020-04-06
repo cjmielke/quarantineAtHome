@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['C:\\Users\\14157\\Desktop\\quarantineAtHome\\quarantine.py'],
              pathex=[
                 'C:\\Users\\14157\\Desktop\\quarantineAtHome',
-                u'C:\\Users\\14157\\Desktop\\quarantineAtHome\\.pyupdater\\spec',
+                'C:\\Users\\14157\\Desktop\\quarantineAtHome\\.pyupdater\\spec',
                 'C:\\Users\\14157\\Desktop\\qah\\docking\\mglmin'
                 ],
              binaries=[],
@@ -14,14 +14,15 @@ a = Analysis(['C:\\Users\\14157\\Desktop\\quarantineAtHome\\quarantine.py'],
              hiddenimports=[],
              hookspath=[u'c:\\users\\14157\\venv\\lib\\site-packages\\pyupdater\\hooks'],
              runtime_hooks=[],
-             excludes=[],
+             #excludes=[],
+             excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
 
 a.datas += Tree('./docking/win32', prefix='docking/win32')
-a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')        # FIXME - needed?
+a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
