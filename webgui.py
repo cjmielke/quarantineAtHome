@@ -46,19 +46,11 @@ def prepServer():
     - instant updates, since the client can just fetch new versions
     '''
 
-    '''      Versioned ....
-        ('/client/index-v1.html', 'index.html'),                     <-    always save to index.html locally, but server-side can have multiple routes+templates 
-        ('/static/js/client.min.v1.js', ''),               <- production       just change filename in assets.py, and commit old ones to git repo
-        ('/static/js/client.v1.js', ''),             <- dev mode
-    '''
-
-
     lis = [
-        ('/client/index-v1.html', 'index.html'),
-        #('/static/js/client.min.js', ''),
-        ('/static/js/client.v1.js', ''),
+        ('/client/index-v1.html', 'index.html'),            # always save to index.html locally, but server-side can have multiple routes+templates
+        #('/static/js/client.min.js', ''),                  # dont need to distinguish between these anymore
+        ('/static/js/client.v1.js', ''),                    # on server just change filename in assets.py, and commit old ones to git repo
     ]
-
 
     if DEV: host = 'http://172.19.0.2:1313'
     else:
@@ -130,10 +122,13 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         BaseHTTPRequestHandler.log_message(self, format, *args)
         return
 
+
     def do_POST(self):                          # eventually needed to allow user to set username
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
         self.send_response(200)
         self.end_headers()
+
+        print self.raw_requestline                      # POST /config HTTP/1.1    .....   can use this for routing with multiple endpoints
 
         data = simplejson.loads(self.data_string)
         self.hook(data)
@@ -191,6 +186,12 @@ class GUIServer():
         self.updateObj.lastResults = results.copy()
         self.update()
 
+    def appendToLog(self):
+        '''add status messages to a buffer - lets the user know what's going on'''
+
+
+    def tailLog(self):
+        '''Follow a log for important status updates and append to buffer'''
 
 
     # FIXME - this will eventually be where we handle post/config updates
@@ -273,7 +274,7 @@ if __name__=='__main__':
     wg = GUIServer().startServer()#.openBrowser()
 
     while True:
-        #print 'still executing', wg.postData
+        print 'still executing', wg.postData, wg.port
         #print httpd
         time.sleep(1)
 

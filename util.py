@@ -15,6 +15,7 @@ if not os.path.exists(dir):			# if a new receptor has been deployed, but we don'
 '''
 
 # TODO - build in backoff logic and retries
+# TODO - figure out how often we want to initiate this update
 def downloadFile(src, dest, replace=True):
 	if dest is None or dest == '':
 		#dest = os.path.join(getwd(), src.split('/')[-1])
