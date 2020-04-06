@@ -104,15 +104,11 @@ def jobLoop():
 
 				receptor = Receptor(receptorName)
 
-				workDir = receptor.dir
+				workDir = receptor.dir          # sloppy, will change later
 
-				#gui.receptor = receptor
-				#gui.update()
 				gui.nextJob(zincID, receptor.name)
 
-
 				TR.saveModel(model, outfile=os.path.join(workDir, 'ligand.pdbqt'))					# job directory
-
 
 				start = time.time()
 				runAutogrid(cwd=workDir)
