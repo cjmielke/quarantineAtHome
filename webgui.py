@@ -9,8 +9,10 @@ import time
 import webbrowser
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from collections import deque
+from threading import Thread
 
 import simplejson as simplejson
+from tail import TailReader
 
 from settings import LOCAL_RESULTS_DIR, getwd
 from util import downloadFile
@@ -100,10 +102,10 @@ class JsonFile():
 
 class UpdateObj(JsonFile):
 	def __init__(self):
-		self.lastJob = None
+		#self.lastJob = None
 		self.ligand = None
 		self.receptor = None
-		self.lastResults = {}
+		self.lastResults = None
 		self.console = []
 
 class SettingsObj(JsonFile):
@@ -135,7 +137,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)         # dont forget this!
 
 	def log_message(self, format, *args):       # suppress some logs
-		if 'GET /update.json' in args[0]: return
+		if type(args[0])==str:
+			if 'GET /update.json' in args[0]: return
 		BaseHTTPRequestHandler.log_message(self, format, *args)
 		return
 
@@ -164,29 +167,21 @@ class GUIServer():
 
 		self.port = None
 		self.httpd = None
-		self.updateObj = UpdateObj()
+		self.updateObj = UpdateObj().load('update.json')
 		self.settings = SettingsObj().load('settings.json')
 		self.log = deque([], maxlen=7)
+		self.tail = None  # type: TailReader
 
 		#global DD
 		#self.postData = DD
 		self.appendToLog('Starting GUI server')
-
-		'''
-		self.jobListFile = os.path.join(getwd(), 'jobs.txt')
-		self.jobList = []
-		if os.path.exists(self.jobListFile):
-			with open(self.jobListFile, 'r') as jl:
-				for row in jl:
-					rDict = json.loads(row)
-					self.jobList.append(rDict)
-		'''
 
 	def update(self):
 		'''
 		For now im lazy so I just write a file that client JS polls ....
 		In the future, serve from memory .... or use websocket
 		'''
+		#self.tailCatchup()         # doesn't work ....
 		self.updateObj.console = list(self.log)
 		self.updateObj.save('update.json')
 
@@ -194,13 +189,14 @@ class GUIServer():
 		print 'running docking algorithm on ', receptor         # serves commandline interface
 		self.updateObj.ligand = zincID
 		self.updateObj.receptor = receptor
-		self.appendToLog('Next job')
+		self.appendToLog('Next job : docking %s to %s'% (zincID, receptor))
 		self.update()
 
 	def jobFinished(self, jobID, results):
 		self.updateObj.lastJob = jobID
 		self.updateObj.lastResults = results.copy()
 		self.appendToLog('Job finished')
+		self.appendToLog('Best binding energy : %s kcal/mol' % results['bestDG'])
 		self.update()
 
 	def appendToLog(self, msg):
@@ -210,9 +206,29 @@ class GUIServer():
 		self.log.append('%s - %s' % (ts,msg))
 		return self
 
-	def tailLog(self):
+	def tailLog(self, logFile):
 		'''Follow a log for important status updates and append to buffer'''
+		if self.tail: self.tail.fileobj.close()
+		self.tail = TailReader(logFile, None, True, "utf-8", None)
 
+	def tailCatchup(self):
+		if not self.tail: return
+		def line_handler(line):
+			line=line.rstrip('\n')
+			if 'BEGINNING GENETIC ALGORITHM' in line:
+				self.appendToLog(line)
+			print line
+
+		update_offset_every_n = 100
+		while True:
+			c = 0
+			for line in self.tail.readlines():
+				line_handler(line)
+				c += 1
+				if c % update_offset_every_n:
+					self.tail.update_offset()
+			self.tail.update_offset()
+			break
 
 	# FIXME - this will eventually be where we handle post/config updates
 	def saveConfig(self, data):
@@ -298,7 +314,7 @@ if __name__=='__main__':
 	wg.nextJob('Z1', 'spike-1')
 
 	while True:
-		print 'still executing', wg.postData, wg.port
+		print 'still executing', wg.settings.username, wg.port
 		#print httpd
 		time.sleep(1)
 		wg.appendToLog('foo').update()
