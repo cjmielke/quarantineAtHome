@@ -93,7 +93,8 @@ class UpdateStatus(object):
 	COULDNT_CHECK_FOR_UPDATES = 5
 
 UPDATE_STATUS_STR = \
-	['Unknown', 'No available updates were found.',
+	['Unknown',
+	 'No available updates were found.',
 	 'Update download failed.', 'Extracting update and restarting.',
 	 'Update available but application is not frozen.',
 	 'Couldn\'t check for updates.']
@@ -127,7 +128,7 @@ def InitializeLogging(debug=False):
 	logging.getLogger("pyupdater").addHandler(STDERR_HANDLER)
 
 
-def CheckForUpdates(debug, fileServerPort=None):
+def CheckForUpdates(debug, raven=None):
 	"""
 	Check for updates.
 
@@ -154,9 +155,12 @@ def CheckForUpdates(debug, fileServerPort=None):
 					logger.debug('Extracting update and restarting...')
 					time.sleep(10)
 
+				if raven: raven.captureMessage(__version__ + ' Extracting update and restarting')
+
 				appUpdate.extract_restart()
 			else:
 				status = UpdateStatus.UPDATE_DOWNLOAD_FAILED
+				if raven: raven.captureMessage(__version__ + ' Download failed')
 		else:
 			status = UpdateStatus.UPDATE_AVAILABLE_BUT_APP_NOT_FROZEN
 	else:
@@ -176,11 +180,11 @@ def DisplayVersionAndExit():
 	sys.exit(0)
 
 
-def doUpdate():
+def doUpdate(raven=None):
 	debug=True
 	InitializeLogging(debug)
 	# FIXME - catch failures of this with sentry/raven, but continue allowing the app to run if updates fail
-	status = CheckForUpdates(debug, fileServerPort=None)
+	status = CheckForUpdates(debug, raven=raven)
 	sys.stderr.write("Exiting with status: %s\n" % UPDATE_STATUS_STR[status])
 
 

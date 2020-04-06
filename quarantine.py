@@ -7,7 +7,8 @@ sentry_errors_log.addHandler(logging.StreamHandler())
 
 
 from updates import doUpdate, __version__
-doUpdate()
+try: doUpdate(raven=client)
+except: client.captureException()
 import sys
 print 'Current version is : ', __version__
 #sys.exit(1)
