@@ -41,11 +41,13 @@ class LogParser():
 
 	def parseLines(self, fh):
 
-		firstLine = fh.readline()
+		#firstLine = fh.readline()
 
 		bindingEnergies = []
-
 		ligandAtoms = []
+
+		poses = []
+		bindingEnergy = 0
 
 		for line in fh:
 			if 'REMARK' in line and 'ZINC' in line:
@@ -58,13 +60,20 @@ class LogParser():
 				# for m in energyRE.findall(line):
 				#	print m
 				bindingEnergy = float(energyRE.findall(line)[0])
-				bindingEnergies.append(bindingEnergy)
 
 			if line.startswith('DOCKED: ATOM'):  # coordinates!
 				ligandAtoms.append(line.replace('DOCKED: ATOM', 'ATOM'))
 
-			if 'ENDMDLDOCKED' in line:
-				self.poses.append(list(ligandAtoms))
+			if line.startswith('DOCKED: ENDMDL'):
+				poses.append(list(ligandAtoms))
+				bindingEnergies.append(bindingEnergy)
+
+		energies_poses = zip(bindingEnergies, poses)
+		ranked_poses = sorted(energies_poses, key=lambda x: x[0])
+
+		bindingEnergies, poses = zip(*ranked_poses)
+
+		self.poses = poses
 
 		'''
 		path, log = os.path.split(fileName)

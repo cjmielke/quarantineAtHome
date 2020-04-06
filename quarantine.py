@@ -111,12 +111,16 @@ def jobLoop():
 				TR.saveModel(model, outfile=os.path.join(workDir, 'ligand.pdbqt'))					# job directory
 
 				start = time.time()
+				gui.appendToLog('Starting Autogrid')
 				runAutogrid(cwd=workDir)
 				#results, logFile = runAutodock(cwd=dir)
+
+				gui.appendToLog('Starting Autodock')
+				#gui.tailLog( os.path.join(workDir, 'docking.dlg') )        # not working right
 				algo, logFile = runAutodock(cwd=workDir)
 
-				p = LogParser(logFile)
-				results = p.results
+				PR = LogParser(logFile)
+				results = PR.results
 				results['algo'] = algo
 				end = time.time()
 				results['time'] = end-start
@@ -124,17 +128,17 @@ def jobLoop():
 				results['tranche'] = trancheID
 				results['ligand'] = ligandNum
 
-				jobID = client.reportResults(results, logFile)
+				jobID = client.reportResults(results, logFile, username=gui.settings.username)
 
 				#### Save local results for the client interface
 
-				# FIXME - this is an incomplete implementation of the gui for showing completed results
-				localResults = os.path.join(LOCAL_RESULTS_DIR, receptor.name)
-				if not os.path.exists(localResults): os.makedirs(localResults)
-				p.saveTrajectory( os.path.join(localResults, 'lastTrajectory.pdbqt') )
+				# FIXME - store all results to disk so user can browse them locally
+				# FIXME - I'll do this later - not important for prototype
+				#localResults = os.path.join(LOCAL_RESULTS_DIR, receptor.name)
+				#if not os.path.exists(localResults): os.makedirs(localResults)
 
-				with open('lastJob.json', 'w') as lf: json.dump(results, lf)
-
+				localResults = getwd()
+				PR.saveTrajectory( os.path.join(localResults, 'lastTrajectory.pdbqt') )
 				gui.jobFinished(jobID, results)
 
 
