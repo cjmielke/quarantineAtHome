@@ -12,7 +12,7 @@ from collections import deque
 from threading import Thread
 
 import simplejson as simplejson
-from tail import TailReader
+#from tail import TailReader
 
 from settings import LOCAL_RESULTS_DIR, getwd
 from util import downloadFile

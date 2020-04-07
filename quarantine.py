@@ -1,5 +1,14 @@
+import logging as logging
+from raven import Client
+
+client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507511340c7f7@bugs.infino.me/6')
+sentry_errors_log = logging.getLogger("sentry.errors")
+sentry_errors_log.addHandler(logging.StreamHandler())
+
+
 from updates import doUpdate, __version__
-doUpdate()
+try: doUpdate(raven=client)
+except: client.captureException()
 import sys
 print 'Current version is : ', __version__
 #sys.exit(1)
@@ -25,11 +34,6 @@ from webgui import GUIServer
 parser = argparse.ArgumentParser()
 parser.parse_args()
 
-from raven import Client
-
-client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507511340c7f7@bugs.infino.me/6')
-sentry_errors_log = logging.getLogger("sentry.errors")
-sentry_errors_log.addHandler(logging.StreamHandler())
 
 #print os.getcwd()
 #print getwd()
