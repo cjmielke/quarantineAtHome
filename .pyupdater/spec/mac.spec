@@ -20,7 +20,7 @@ a = Analysis(['/Users/me/PycharmProjects/quarantineAtHome/quarantine.py'],
              cipher=block_cipher,
              noarchive=False)
 
-a.datas += Tree('./docking/win32', prefix='docking/win32')
+a.datas += Tree('./docking/MacOSX', prefix='docking/MacOSX')
 #a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
