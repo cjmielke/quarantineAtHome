@@ -7,7 +7,7 @@ a = Analysis(['/Users/me/PycharmProjects/quarantineAtHome/quarantine.py'],
              pathex=[
              	'/Users/me/PycharmProjects/quarantineAtHome',
              	'/Users/me/PycharmProjects/quarantineAtHome/.pyupdater/spec',
-             	'/Users/me/PycharmProjects/quarantineAtHome/docking/MacOSX'
+             	'/Users/me/PycharmProjects/quarantineAtHome/docking/mglmin'
              	],
              binaries=[],
              datas=[],
@@ -21,7 +21,7 @@ a = Analysis(['/Users/me/PycharmProjects/quarantineAtHome/quarantine.py'],
              noarchive=False)
 
 a.datas += Tree('./docking/MacOSX', prefix='docking/MacOSX')
-#a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
+a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
