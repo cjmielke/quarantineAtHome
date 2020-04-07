@@ -4,7 +4,11 @@ block_cipher = None
 
 
 a = Analysis(['/Users/me/PycharmProjects/quarantineAtHome/quarantine.py'],
-             pathex=['/Users/me/PycharmProjects/quarantineAtHome', u'/Users/me/PycharmProjects/quarantineAtHome/.pyupdater/spec'],
+             pathex=[
+             	'/Users/me/PycharmProjects/quarantineAtHome',
+             	'/Users/me/PycharmProjects/quarantineAtHome/.pyupdater/spec',
+             	'/Users/me/PycharmProjects/quarantineAtHome/docking/MacOSX'
+             	],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -15,8 +19,12 @@ a = Analysis(['/Users/me/PycharmProjects/quarantineAtHome/quarantine.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+
+a.datas += Tree('./docking/win32', prefix='docking/win32')
+#a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
 exe = EXE(pyz,
           a.scripts,
           [],
@@ -26,6 +34,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
+          icon="icon.ico",
           console=True )
 coll = COLLECT(exe,
                a.binaries,

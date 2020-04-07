@@ -24,8 +24,8 @@ a = Analysis(['C:\\Users\\14157\\Desktop\\quarantineAtHome\\quarantine.py'],
 a.datas += Tree('./docking/win32', prefix='docking/win32')
 a.datas += Tree('./docking/mglmin', prefix='docking/mglmin')
 
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
 exe = EXE(pyz,
           a.scripts,
           [],
