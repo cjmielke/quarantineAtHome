@@ -34,8 +34,9 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          icon="icon.ico",
+          icon=None,
           console=True )
+
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -44,3 +45,6 @@ coll = COLLECT(exe,
                upx=True,
                upx_exclude=[],
                name='mac')
+
+app = BUNDLE(coll, name='Quarantine@Home.app', icon='icon.icns', bundle_identifier='Quarantine@Home')
+

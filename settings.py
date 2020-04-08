@@ -13,17 +13,17 @@ RECEPTORS_DIR = 'docking/receptors'
 
 
 def getwd():
-	if os.name == 'nt':
-		if hasattr(sys, 'frozen'):
-				#print 'this is a pyinstaller-compiled binary'
-				#print sys.frozen
-				#print sys._MEIPASS                      # location of directory program is running in
-				return sys._MEIPASS
-		else:
-			return os.getcwd()  # how I originally did this ....
-
+	#if os.name == 'nt':
+	if hasattr(sys, 'frozen'):
+			#print 'this is a pyinstaller-compiled binary'
+			#print sys.frozen
+			#print sys._MEIPASS                      # location of directory program is running in
+			return sys._MEIPASS
 	else:
-		return os.getcwd()              # how I originally did this ....
+		return os.getcwd()  # how I originally did this ....
+
+	#else:
+	#	return os.getcwd()              # how I originally did this ....
 
 
 RECEPTORS_DIR = os.path.join(getwd(), 'receptors')
