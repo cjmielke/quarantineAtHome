@@ -162,6 +162,8 @@ def _overwrite(self):
 	log.debug("Current App location:\n\n%s", current_app)
 
 	macDir = os.path.join(current_app, 'Contents', 'MacOS')
+	print 'macDir is ', macDir
+	time.sleep(3)
 
 	# Remove current app to prevent errors when moving
 	# update to new location
@@ -173,6 +175,8 @@ def _overwrite(self):
 		else:
 			shutil.rmtree(os.path.dirname(current_app))
 		'''
+		print 'About to rmdir ', macDir
+		time.sleep(5)
 		shutil.rmtree(macDir)
 
 	#if os.path.exists(current_app):
@@ -182,7 +186,11 @@ def _overwrite(self):
 	#shutil.move(app_update, self._current_app_dir)
 
 	dest = os.path.join(self._current_app_dir, 'QuarantineAtHome.app', 'Contents', 'MacOS')
+	print 'dest is ', dest
+	time.sleep(3)
 	log.debug("Moving app to new location:\n\n%s", dest)
+	print 'moving this dir to ', app_update
+	time.sleep(10)
 	shutil.move(app_update, dest)
 	shutil.copy(os.path.join(self._current_app_dir, 'QuarantineAtHome.app', 'Contents', 'Resources', 'run.sh') , dest)
 
