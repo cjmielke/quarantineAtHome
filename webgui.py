@@ -1,3 +1,8 @@
+import posixpath
+import urllib
+
+import urlparse
+
 import SimpleHTTPServer
 import SocketServer
 from datetime import datetime
@@ -123,11 +128,23 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	def config(self, data):     # something to be added after the fact
 		raise NotImplementedError
 
+	''' Need to provide my own version which points to the install directory  '''
 	def translate_path(self, path):             # for rewriting paths
-		# if '/static/' in path: path = path.replace('/static/', '/')
+		# rewrite static folder
 		path = path.replace('/static/js/', '/')
 		path = path.replace('/static/', '/')
-		path = SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(self, path)
+
+		# code from base, with one modification
+		path = urlparse.urlparse(path)[2]
+		path = posixpath.normpath(urllib.unquote(path))
+		words = path.split('/')
+		words = filter(None, words)
+		path = getwd()                  # the single change
+		for word in words:
+			drive, word = os.path.splitdrive(word)
+			head, word = os.path.split(word)
+			if word in (os.curdir, os.pardir): continue
+			path = os.path.join(path, word)
 		return path
 
 	def end_headers(self):                      # disable browser cache
