@@ -10,7 +10,7 @@ from updates import doUpdate, __version__
 try: doUpdate(raven=client)
 except: client.captureException()
 import sys
-print 'Current version is : ', __version__
+print 'After update check - version is : ', __version__
 #sys.exit(1)
 
 

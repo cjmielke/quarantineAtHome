@@ -1,5 +1,5 @@
 #__version__ = "0.0.1.2.3"
-__version__ = "1.0.5"
+__version__ = "1.0.7"
 
 import shutil
 
@@ -13,7 +13,7 @@ import sys
 import time
 import argparse
 
-from pyupdater.client import Client
+from pyupdater.client import Client, AppUpdate
 
 #import QUARANTINE
 #from QUARANTINE.main import PyUpdaterWxDemoApp
@@ -134,57 +134,61 @@ def InitializeLogging(debug=False):
 	logging.getLogger("pyupdater").addHandler(STDERR_HANDLER)
 
 
-'''patching a fixed version of this method'''
-def _overwrite(self):
-	from pyupdater.client.updates import log
-	# Unix: Overwrites the running applications binary
-	if get_system() == "mac":
-		if self._current_app_dir.endswith("MacOS") is True:
-			log.debug("Looks like we're dealing with a Mac Gui")
-			temp_dir = get_mac_dot_app_dir(self._current_app_dir)
-			self._current_app_dir = temp_dir
+class myMacAppUpdate(AppUpdate):
+	'''patching a fixed version of this method'''
+	def _overwrite(self):
+		from pyupdater.client.updates import log
+		# Unix: Overwrites the running applications binary
+		if get_system() == "mac":
+			if self._current_app_dir.endswith("MacOS") is True:
+				log.debug("Looks like we're dealing with a Mac Gui")
+				print("Looks like we're dealing with a Mac Gui")
+				temp_dir = get_mac_dot_app_dir(self._current_app_dir)
+				self._current_app_dir = temp_dir
 
-	app_update = os.path.join(self.update_folder, self.name)
+		app_update = os.path.join(self.update_folder, self.name)
 
-	# Must be dealing with Mac .app application
-	if not os.path.exists(app_update) and sys.platform == "darwin":
-		app_update += ".app"
+		# Must be dealing with Mac .app application
+		if not os.path.exists(app_update) and sys.platform == "darwin":
+			app_update += ".app"
 
-	log.debug("Update Location:\n%s", os.path.dirname(app_update))
-	log.debug("Update Name: %s", os.path.basename(app_update))
+		log.debug("Update Location:\n%s", os.path.dirname(app_update))
+		log.debug("Update Name: %s", os.path.basename(app_update))
 
-	current_app = os.path.join(self._current_app_dir, self.name)
+		current_app = os.path.join(self._current_app_dir, self.name)
 
-	# Must be dealing with Mac .app application
-	if not os.path.exists(current_app):
-		current_app += ".app"
+		# Must be dealing with Mac .app application
+		if not os.path.exists(current_app):
+			current_app += ".app"
 
-	log.debug("Current App location:\n\n%s", current_app)
+		log.debug("Current App location:\n\n%s", current_app)
 
-	macDir = os.path.join(current_app, 'Contents', 'MacOS')
+		# instead we just clobber the MacOS subdirectory and replace it
+		macDir = os.path.join(current_app, 'Contents', 'MacOS')
 
-	# Remove current app to prevent errors when moving
-	# update to new location
-	# if update_app is a directory, then we are updating a directory
-	if os.path.isdir(app_update):
-		'''
-		if os.path.isdir(current_app):
-			shutil.rmtree(current_app)
-		else:
-			shutil.rmtree(os.path.dirname(current_app))
-		'''
-		shutil.rmtree(macDir)
+		# Remove current app to prevent errors when moving
+		# update to new location
+		# if update_app is a directory, then we are updating a directory
+		if os.path.isdir(app_update):
+			'''
+			if os.path.isdir(current_app):
+				shutil.rmtree(current_app)
+			else:
+				shutil.rmtree(os.path.dirname(current_app))
+			'''
+			shutil.rmtree(macDir)
 
-	#if os.path.exists(current_app):
-	#	remove_any(current_app)
+		#if os.path.exists(current_app):
+		#	remove_any(current_app)
 
-	#log.debug("Moving app to new location:\n\n%s", self._current_app_dir)
-	#shutil.move(app_update, self._current_app_dir)
+		#log.debug("Moving app to new location:\n\n%s", self._current_app_dir)
+		#shutil.move(app_update, self._current_app_dir)
 
-	dest = os.path.join(self._current_app_dir, 'QuarantineAtHome.app', 'Contents', 'MacOS')
-	log.debug("Moving app to new location:\n\n%s", dest)
-	shutil.move(app_update, dest)
-	shutil.copy(os.path.join(self._current_app_dir, 'QuarantineAtHome.app', 'Contents', 'Resources', 'run.sh') , dest)
+		dest = os.path.join(self._current_app_dir, 'QuarantineAtHome.app', 'Contents', 'MacOS')
+		log.debug("Moving app to new location:\n\n%s", dest)
+		shutil.move(app_update, dest)
+		# we also copy back the outer wrapper that runs the terminal
+		shutil.copy(os.path.join(self._current_app_dir, 'QuarantineAtHome.app', 'Contents', 'Resources', 'run.sh') , dest)
 
 
 def CheckForUpdates(debug, raven=None):
@@ -199,8 +203,10 @@ def CheckForUpdates(debug, raven=None):
 	appUpdate = client.update_check(CLIENT_CONFIG.APP_NAME, __version__, channel='stable')
 
 	if appUpdate:
-		# patch in my overwritten update
-		if get_system() == 'mac': appUpdate._overwrite = _overwrite
+
+		# patch in my overwritten update for mac systems
+		if get_system() == 'mac':
+			appUpdate = myMacAppUpdate(appUpdate.init_data)
 
 		if hasattr(sys, "frozen"):
 			downloaded = appUpdate.download()
@@ -243,6 +249,7 @@ def DisplayVersionAndExit():
 
 
 def doUpdate(raven=None):
+	print 'Current App Version is ', __version__
 	debug=True
 	InitializeLogging(debug)
 	# FIXME - catch failures of this with sentry/raven, but continue allowing the app to run if updates fail

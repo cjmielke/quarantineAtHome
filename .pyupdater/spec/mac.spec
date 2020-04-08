@@ -46,5 +46,5 @@ coll = COLLECT(exe,
                upx_exclude=[],
                name='mac')
 
-app = BUNDLE(coll, name='Quarantine@Home.app', icon='icon.icns', bundle_identifier='Quarantine@Home')
+app = BUNDLE(coll, name='QuarantineAtHome.app', icon='icon.icns', bundle_identifier='QuarantineAtHome')
 
