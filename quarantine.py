@@ -1,24 +1,20 @@
-import logging as logging
-from raven import Client
+import os
+import sentry_sdk
+from updates import __version__
 
-client = Client('https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507511340c7f7@bugs.infino.me/6')
-sentry_errors_log = logging.getLogger("sentry.errors")
-sentry_errors_log.addHandler(logging.StreamHandler())
+# Done here for use in Sentry
+devmode = os.getenv('DEBUG')		# if set, enters developer mode (contacts local server
+USERNAME = os.getenv('ME')		# if set, enters developer mode (contacts local server
 
-
-from updates import doUpdate, __version__
-try: doUpdate(raven=client)
-except: client.captureException()
-import sys
+# Configure Sentry:
+_sentry_uri = os.getenv('QAH_SENTRY_URI') or 'https://95200bce44ef41ae828324e243dc3240:4d2b75ff840d434490a507511340c7f7@bugs.infino.me/6'
+sentry_sdk.init(_sentry_uri, release=__version__, user=USERNAME)
 print 'Current version is : ', __version__
 #sys.exit(1)
-
-
 
 import argparse
 import json
 import logging
-import os
 import sys
 import time
 from random import shuffle
@@ -68,8 +64,7 @@ which tranche file should be processed.
 '''
 
 
-devmode = os.getenv('DEBUG')		# if set, enters developer mode (contacts local server
-USERNAME = os.getenv('ME')		# if set, enters developer mode (contacts local server
+
 
 
 
