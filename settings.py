@@ -38,3 +38,8 @@ LOCAL_RESULTS_DIR = os.path.join( getwd(), 'results' )
 
 
 
+
+MGL_LIBS = os.path.join(getwd(), 'docking', 'mglmin')
+sys.path.append(MGL_LIBS)
+
+
