@@ -73,7 +73,7 @@ class API():						# API client for talking to server
 		return j
 
 	def nextTranche(self):
-		j = self._get('/tranche/get')
+		j = self._get('/tranche/getspecial')
 		self.mirror = j.get('mirror', None)
 		return j['id'], j['tranche']
 
@@ -117,7 +117,21 @@ class TrancheReader():					# for fetchng/parsing tranche file
 		self.currentModel = 0
 		self.trancheFile = None
 		self.download()
+		self.open()
+
+	def open(self):
+		self.currentModel = 1                       # I discovered that some tranche files only have a single ligand and dont have MODEL lines....
 		self.fh = gzip.open(self.trancheFile)
+		# need to test if it is an actual gzipFile - some on zinc are not despite filename :(
+		try:
+			self.fh.readline()          # if this works, we need to close and re-open ....
+			self.fh.close()
+			self.fh = gzip.open(self.trancheFile)
+		except IOError as e:            # if it fails, open as regular file
+			if 'Not a gzipped file' in e.message:
+				self.fh.close()
+				self.fh = open(self.trancheFile)
+			else: raise
 
 	# FIXME - really should download tranche files into a local path ....
 	def download(self):
@@ -146,14 +160,16 @@ class TrancheReader():					# for fetchng/parsing tranche file
 	def getModel(self, modelNum):
 
 		if modelNum < self.currentModel:			# reload tranche modelfile if the server is requesting a ligand we've already passed
-			self.fh = gzip.open(self.tranchePath)
+			self.open()
 
 		zincID = None
 		lines = []
 		for line in self.fh:
-			if line.startswith('MODEL'):
+			if line.startswith('MODEL'):            # WARNING - tranches that have only a SINGLE model in them do NOT have MODEL lines ....
 				self.currentModel = int(line.replace('MODEL', '').strip().rstrip())
-				if self.currentModel > modelNum: break
+
+			if self.currentModel > modelNum: break
+
 			if line.startswith('REMARK'):
 				if 'Name' in line:
 					zincID = line.replace('REMARK', '').replace('Name', '').replace('=', '').strip()
