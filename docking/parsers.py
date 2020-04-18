@@ -117,12 +117,17 @@ class LogParser():
 			json.dump(self.results, fh)
 	'''
 
-	def saveTrajectory(self, trajFile):
-		with open(trajFile, 'w') as fh:
+	def saveTrajectory(self, trajFile, compress=False):
+		def writeLines(fh):
 			for i, pose in enumerate(self.poses):
 				fh.write('MODEL        %d\n' % (i+1))
 				fh.writelines(pose)
 				fh.write('ENDMDL\n')
+
+		if compress:
+			with gzip.open(trajFile, 'w') as fh: writeLines(fh)
+		else:
+			with open(trajFile, 'w') as fh: writeLines(fh)
 
 
 # keep interface the same for now to make merging easier later
