@@ -7,6 +7,8 @@
 
 while :
 do
+	# update client code periodically (sorry github, you're my bandwidth provider)
+	git pull
 	echo "Starting python script"
 	python2.7 quarantine.py
 	# test return code
@@ -14,8 +16,6 @@ do
 		break
 	fi
 	sleep 60
-	# update client code periodically (sorry github, you're my bandwidth provider)
-	git pull
 done
 
 
