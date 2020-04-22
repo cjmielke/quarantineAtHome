@@ -13,6 +13,7 @@ import shutil
 from docking.autodock import runAutodock, prepDPFshell
 from docking.autogrid import runAutogrid
 from getjob import API, TrancheReader
+from util import Receptor
 
 parser = argparse.ArgumentParser()
 parser.parse_args()
@@ -93,12 +94,15 @@ def fetchLoop(work_new):
 				client.trancheEOF(trancheID)
 				break
 
-			for receptor in receptors:
-				print('queueing docking algorithm on '+str(receptor))
+			for receptorName in receptors:
+
+				receptor = Receptor(receptorName)
+
+				print('queueing docking algorithm on ' + receptor.name)
 
 				# Creating a temporary directory per job
 				dir = tempfile.mkdtemp() # .TemporaryDirectory()
-				work_new.put([dir, receptor, trancheID, ligandNum, client])
+				work_new.put([dir, receptor.name, trancheID, ligandNum, client])
 				#dir = os.path.join(os.getcwd(), 'receptors', receptor)
 
 				if not os.path.exists(dir):			# if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
@@ -106,10 +110,9 @@ def fetchLoop(work_new):
 					#sys.exit(1)
 
 				# Need to copy receptor file
-				receptor_dir = os.path.join(os.getcwd(), 'receptors', receptor)
-				if not os.path.exists(receptor_dir):  # if a new receptor has been deployed, but we don't have it, stop the client and run git-pull
-					raise ValueError("Don't have this receptor definition yet")
-					# sys.exit(1)
+				#receptor_dir = os.path.join(os.getcwd(), 'receptors', receptor)
+				receptor_dir = receptor.dir         # new object handles receptor downloads, etc
+
 				print("Copying "+receptor_dir+" to "+dir)
 				try:
 					#shutil.copytree(receptor_dir, dir)
@@ -123,6 +126,8 @@ def fetchLoop(work_new):
 				sys.stdout.flush()	# make sure child processes print
 			time.sleep(0.5) # slow down to help syncing, server
 	return
+
+
 
 class CpuConsumer(multiprocessing.Process):
 	def __init__(self, work_new, work_gpu):
