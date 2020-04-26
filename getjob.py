@@ -181,7 +181,7 @@ class TrancheReader():					# for fetchng/parsing tranche file
 		with open(outfile, 'w') as lf:
 			lf.write('MODEL        1\n')        # write back the header since we excluded it during parsing ^
 			lf.write(model)
-			lf.write('ENDMDL\n')                # also write back footer since it was excluded before
+			lf.write('\nENDMDL\n')                # also write back footer since it was excluded before
 
 
 
