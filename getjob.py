@@ -114,10 +114,11 @@ class API():						# API client for talking to server
 
 
 class TrancheReader():					# for fetchng/parsing tranche file
-	def __init__(self, trancheID, tranchePath, mirror=None):
+	def __init__(self, trancheID, tranchePath, mirror=None, localCache=None):
 		self.fileServer = mirror or 'http://files.docking.org/'
-		self.trancheID = trancheID
+		self.trancheID = trancheID      # FIXME - could probably remove this ...
 		self.tranchePath = tranchePath				# as in, the url path on files.docker.org
+		self.localCache = localCache or TRANCHE_DOWNLOAD_LOCATION
 		self.currentModel = 0
 		self.trancheFile = None
 		self.download()
@@ -133,7 +134,7 @@ class TrancheReader():					# for fetchng/parsing tranche file
 		#trancheFilename = Tn
 		urlParts = self.tranchePath.split('/')
 
-		localPath = os.path.join(TRANCHE_DOWNLOAD_LOCATION, *urlParts[:-1])
+		localPath = os.path.join(self.localCache, *urlParts[:-1])
 		if not os.path.exists(localPath): os.makedirs(localPath)
 		trancheFilename = urlParts[-1]
 		self.trancheFile = os.path.join(localPath, trancheFilename)
