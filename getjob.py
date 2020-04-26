@@ -159,6 +159,8 @@ class TrancheReader():					# for fetchng/parsing tranche file
 			if line.startswith('MODEL'):
 				self.currentModel = int(line.replace('MODEL', '').strip().rstrip())
 				if self.currentModel > modelNum: break
+				continue        # NOTE - the actual MODEL line is excluded
+			if line.startswith('ENDMDL'): continue
 			if line.startswith('REMARK'):
 				if 'Name' in line:
 					zincID = line.replace('REMARK', '').replace('Name', '').replace('=', '').strip()
@@ -177,7 +179,9 @@ class TrancheReader():					# for fetchng/parsing tranche file
 
 	def saveModel(self, model, outfile='ligand.pdbqt'):
 		with open(outfile, 'w') as lf:
+			lf.write('MODEL        1\n')        # write back the header since we excluded it during parsing ^
 			lf.write(model)
+			lf.write('ENDMDL\n')                # also write back footer since it was excluded before
 
 
 
