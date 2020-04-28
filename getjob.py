@@ -59,7 +59,7 @@ class API():						# API client for talking to server
 		# nginx will conveniently return a 502 if the flask server goes down
 
 		methods = frozenset(["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST"] )
-		retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504], method_whitelist=methods)
+		retries = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504], method_whitelist=methods)     # lets try a 500 code too ....
 		self.session.mount('https://', HTTPAdapter(max_retries=retries))
 
 		#self.session.get("http://httpstat.us/503")
@@ -69,7 +69,7 @@ class API():						# API client for talking to server
 		url = self.apiPath+path
 		#req = requests.get(url, timeout=5)
 		req = self.session.get(url, timeout=5)
-		j = json.loads(req.text)
+		j = json.loads(req.text)                    # FIXME - if the server has a problem, this fails, and we need to have the client back off and retry ....
 		return j
 
 	def nextTranche(self):
