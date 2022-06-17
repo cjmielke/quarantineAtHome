@@ -1,4 +1,4 @@
 argparse
-numpy==1.8		# needed for mgltools libs
+numpy==1.21.0		# needed for mgltools libs
 requests
 raven
